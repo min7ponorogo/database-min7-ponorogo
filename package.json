@@ -13,5 +13,11 @@
     "react-dom": "19.0.0",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/node": "latest"
   }
 }
