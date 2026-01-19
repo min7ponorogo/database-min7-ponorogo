@@ -1,12 +1,7 @@
-export const metadata = {
-  title: 'Database EMIS MIN 7',
-  description: 'Sistem Informasi Data Siswa',
-}
-
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: any
 }) {
   return (
     <html lang="id">
