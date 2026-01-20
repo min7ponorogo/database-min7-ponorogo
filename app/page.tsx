@@ -6,7 +6,6 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 
 export default function Home() {
-  // State utama untuk menyimpan semua data dari database
   const [db, setDb] = useState<any>({ 
     siswa: [], 
     alamat: [], 
@@ -23,7 +22,6 @@ export default function Home() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // Mengambil semua data secara paralel agar cepat
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -41,8 +39,8 @@ export default function Home() {
           ortu: o.data || [], 
           aktivitas: ak.data || [] 
         });
-      } catch (error) {
-        console.error("Gagal mengambil data:", error);
+      } catch (err) {
+        console.error("Fetch error:", err);
       } finally {
         setLoading(false);
       }
@@ -50,89 +48,61 @@ export default function Home() {
     fetchData();
   }, [supabase]);
 
-  // Fungsi pencarian otomatis
   const getFilteredData = () => {
     const currentData = db[menuAktif as keyof typeof db] || [];
-    if (!search) return currentData;
     return currentData.filter((item: any) => 
       JSON.stringify(item).toLowerCase().includes(search.toLowerCase())
     );
   };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50 font-sans text-slate-900">
-      {/* 1. Komponen Header */}
+    <div className="flex flex-col h-screen bg-[#F8FAFC] font-sans text-slate-900">
       <Header search={search} setSearch={setSearch} />
       
       <div className="flex flex-1 overflow-hidden">
-        {/* 2. Komponen Sidebar */}
         <Sidebar aktif={menuAktif} setAktif={setMenuAktif} />
         
-        {/* 3. Area Konten Utama */}
-        <main className="flex-1 overflow-y-auto p-6 lg:p-10 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px]">
-          
-          {loading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-700"></div>
-            </div>
-          ) : menuAktif === 'dashboard' ? (
-            /* TAMPILAN DASHBOARD */
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-emerald-900/5 border border-white flex flex-col md:flex-row justify-between items-center gap-6">
-                <div>
-                  <h2 className="text-4xl font-black text-slate-900 tracking-tight">Selamat Datang! 👋</h2>
-                  <p className="text-slate-500 mt-2 font-medium italic">Sistem Informasi Digital Terpadu MIN 7 Ponorogo</p>
-                </div>
-                <div className="hidden md:flex -space-x-4">
-                  <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl shadow-inner">🕌</div>
-                  <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center text-2xl shadow-inner">📚</div>
-                </div>
-              </div>
+        <main className="flex-1 overflow-y-auto p-6 lg:p-10 relative">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard label="Total Siswa" val={db.siswa.length} color="emerald" />
-                <StatCard label="Data Alamat" val={db.alamat.length} color="blue" />
-                <StatCard label="Data Wali" val={db.ortu.length} color="orange" />
-                <StatCard label="Log Aktivitas" val={db.aktivitas.length} color="purple" />
+          <div className="relative z-10">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center h-[60vh]">
+                <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-700 rounded-full animate-spin"></div>
+                <p className="mt-4 text-emerald-800 font-bold animate-pulse">Menghubungkan ke Database...</p>
               </div>
-            </div>
-          ) : (
-            /* TAMPILAN TABEL DATA */
-            <div className="bg-white rounded-[2rem] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500">
-               <div className="p-8 border-b border-slate-50 flex justify-between items-center">
-                  <h3 className="text-xl font-black uppercase tracking-tight text-slate-800">Data {menuAktif}</h3>
-                  <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">
-                    {getFilteredData().length} Baris ditemukan
-                  </span>
-               </div>
-               
-               <div className="p-4">
-                  {/* Di sini nanti kita panggil <DataTable /> */}
-                  <p className="text-center text-slate-400 p-20 italic">
-                    Gunakan file DataTable.tsx untuk menampilkan isi tabel ini agar lebih rapi.
-                  </p>
-               </div>
-            </div>
-          )}
+            ) : menuAktif === 'dashboard' ? (
+              <DashboardView db={db} />
+            ) : (
+              <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl shadow-slate-200/50 overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+                <div className="p-8 border-b border-slate-50 bg-gradient-to-r from-white to-slate-50/50 flex justify-between items-center">
+                  <div>
+                    <h3 className="text-2xl font-black uppercase tracking-tight text-slate-800">{menuAktif}</h3>
+                    <p className="text-xs text-slate-400 font-bold mt-1 tracking-widest uppercase">Database Terintegrasi</p>
+                  </div>
+                  <div className="bg-emerald-500 text-white text-[10px] font-black px-4 py-2 rounded-2xl shadow-lg shadow-emerald-200">
+                    {getFilteredData().length} TOTAL DATA
+                  </div>
+                </div>
+                
+                <div className="p-12 text-center">
+                  <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl">📁</div>
+                  <h4 className="text-lg font-bold text-slate-800">Tampilan Data {menuAktif}</h4>
+                  <p className="text-slate-500 text-sm max-w-xs mx-auto mt-2">Gunakan komponen DataTable untuk merender data ini ke dalam tabel yang interaktif.</p>
+                </div>
+              </div>
+            )}
+          </div>
         </main>
       </div>
     </div>
   );
 }
 
-// Komponen Kecil untuk Kartu Statistik agar tidak mengulang kode
-function StatCard({ label, val, color }: { label: string, val: number, color: string }) {
-  const colors: any = {
-    emerald: "text-emerald-600 bg-emerald-50",
-    blue: "text-blue-600 bg-blue-50",
-    orange: "text-orange-600 bg-orange-50",
-    purple: "text-purple-600 bg-purple-50",
-  };
-  
+function DashboardView({ db }: { db: any }) {
   return (
-    <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all">
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
-      <h3 className={`text-4xl font-black mt-2 ${colors[color].split(' ')[0]}`}>{val}</h3>
-    </div>
-  );
-}
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+      {/* Hero Welcome */}
+      <div className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 p-10 rounded-[3rem] text-white shadow-2xl shadow-emerald-900/20 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-6
