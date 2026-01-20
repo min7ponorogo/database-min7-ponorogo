@@ -11,6 +11,7 @@ const supabase = createClient(
 
 export default function Dashboard() {
   const [stats, setStats] = useState({ total: 0, aktif: 0, l: 0, p: 0 });
+  const [rombelList, setRombelList] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -19,25 +20,25 @@ export default function Dashboard() {
       try {
         setLoading(true);
         
-        // Coba ambil dari tabel data_siswa (Huruf Kecil)
+        // 1. Ambil data profil siswa
         const { data: profil, error: err1 } = await supabase
           .from('data_siswa') 
           .select('*');
 
+        // 2. Ambil data aktivitas belajar
         const { data: aktivitas, error: err2 } = await supabase
           .from('aktivitas_belajar')
           .select('*');
 
         if (err1 || err2) {
-          console.error("Detail Error:", err1 || err2);
           setErrorMsg(err1?.message || err2?.message || "Gagal koneksi");
           return;
         }
 
         if (profil) {
-          // Kita gunakan filter yang lebih fleksibel (cek L atau Laki-laki)
-          const cowok = profil.filter(s => String(s['JENIS KELAMIN']).startsWith('L')).length;
-          const cewek = profil.filter(s => String(s['JENIS KELAMIN']).startsWith('P')).length;
+          // Filter Jenis Kelamin (Cek huruf L/P atau angka 1/2 sesuai database)
+          const cowok = profil.filter(s => String(s['JENIS KELAMIN']).startsWith('L') || String(s['JENIS KELAMIN']) === '1').length;
+          const cewek = profil.filter(s => String(s['JENIS KELAMIN']).startsWith('P') || String(s['JENIS KELAMIN']) === '2').length;
           
           setStats(prev => ({
             ...prev,
@@ -48,8 +49,13 @@ export default function Dashboard() {
         }
 
         if (aktivitas) {
+          // Hitung siswa aktif
           const aktif = aktivitas.filter(a => String(a['STATUS BELAJAR']).toLowerCase() === 'aktif').length;
           setStats(prev => ({ ...prev, aktif: aktif }));
+
+          // Ambil daftar ROMBEL unik (Menghilangkan duplikat)
+          const daftarRombel = Array.from(new Set(aktivitas.map(a => a.ROMBEL).filter(Boolean)));
+          setRombelList(daftarRombel as string[]);
         }
 
       } catch (err: any) {
@@ -68,36 +74,71 @@ export default function Dashboard() {
         <Sidebar aktif="dashboard" setAktif={() => {}} />
         <main className="flex-1 p-8 overflow-y-auto">
           
-          {/* Alert jika ada error */}
           {errorMsg && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
               <strong>Error Database:</strong> {errorMsg} 
-              <p className="text-xs">Pastikan nama tabel di Supabase adalah "data_siswa" (huruf kecil semua)</p>
             </div>
           )}
 
           <div className="bg-[#065f46] text-white p-10 rounded-[2.5rem] mb-10 shadow-xl relative overflow-hidden">
              <h2 className="text-5xl font-black mb-3 italic">Ahlan wa Sahlan! 👋</h2>
-             <p className="opacity-90">MIN 7 Ponorogo - Data Terkoneksi</p>
+             <p className="opacity-90 font-medium">MIN 7 Ponorogo - Sistem Informasi Digital</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Statistik Utama */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
             <StatCard title="Total Siswa" val={stats.total} load={loading} col="text-emerald-600" />
             <StatCard title="Siswa Aktif" val={stats.aktif} load={loading} col="text-emerald-500" />
-            <StatCard title="Laki-Laki" val={stats.l} load={loading} col="text-blue-600" />
-            <StatCard title="Perempuan" val={stats.p} load={loading} col="text-pink-600" />
+            
+            {/* Kartu dengan Gambar Laki-Laki */}
+            <StatCard title="Laki-Laki" val={stats.l} load={loading} col="text-blue-600" img="👦" />
+            
+            {/* Kartu dengan Gambar Perempuan */}
+            <StatCard title="Perempuan" val={stats.p} load={loading} col="text-pink-600" img="👧" />
           </div>
+
+          {/* Daftar Rombel dari tabel aktivitas_belajar */}
+          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <span className="bg-emerald-100 p-2 rounded-lg">🏫</span> Daftar Rombel Tersedia
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {loading ? (
+                <p className="text-slate-400 italic">Memuat rombel...</p>
+              ) : rombelList.length > 0 ? (
+                rombelList.sort().map((rombel, index) => (
+                  <div key={index} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center hover:bg-emerald-50 hover:border-emerald-200 transition-all cursor-default">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Rombel</p>
+                    <p className="font-black text-slate-700">{rombel}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-slate-400 italic">Data rombel tidak ditemukan.</p>
+              )}
+            </div>
+          </div>
+
         </main>
       </div>
     </div>
   );
 }
 
-function StatCard({ title, val, load, col }: any) {
+// Komponen StatCard yang sudah mendukung Gambar/Emoji
+function StatCard({ title, val, load, col, img }: any) {
   return (
-    <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:scale-105">
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{title}</p>
-      <p className={`text-6xl font-black ${col}`}>{load ? "..." : val}</p>
+    <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:shadow-md relative overflow-hidden group">
+      <div className="relative z-10">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{title}</p>
+        <p className={`text-6xl font-black ${col}`}>{load ? "..." : val}</p>
+      </div>
+      
+      {/* Gambar/Emoji di pojok kartu */}
+      {img && (
+        <div className="absolute -right-2 -bottom-2 text-7xl opacity-20 group-hover:opacity-40 transition-opacity grayscale group-hover:grayscale-0">
+          {img}
+        </div>
+      )}
     </div>
   );
 }
