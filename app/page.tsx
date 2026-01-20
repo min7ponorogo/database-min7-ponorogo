@@ -1,7 +1,8 @@
 "use client";
-
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
+
+// Perhatikan penulisan './components/...'
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import DataTable from './components/DataTable';
