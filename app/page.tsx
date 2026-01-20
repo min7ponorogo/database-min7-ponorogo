@@ -65,7 +65,7 @@ export default function Home() {
             <div className="space-y-6">
               <div className="bg-emerald-800 p-10 rounded-[2rem] text-white shadow-xl">
                 <h2 className="text-3xl font-black italic text-white">Ahlan wa Sahlan! 👋</h2>
-                <p className="opacity-80 mt-2 text-white">Selamat datang di Panel Admin Digital MIN 7 Ponorogo.</p>
+                <p className="opacity-80 mt-2 text-white">Selamat datang di Sistem Informasi Siswa Digital MIN 7 Ponorogo.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-white">
