@@ -6,7 +6,7 @@ import Sidebar from './components/Sidebar';
 
 const supabase = createClient(
   'https://psdyvshvpsatidpizfbe.supabase.co',
-  'MASUKKAN_ANON_KEY_ANDA'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpicWFseGxseXJsZ3R3cWJvdXJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzNTY2NzYsImV4cCI6MjA4MzkzMjY3Nn0.Z-FoLjelSimsWN4XW7qs8pbB_Dx0DjDkMwjNMG7udbY'
 );
 
 export default function Dashboard() {
