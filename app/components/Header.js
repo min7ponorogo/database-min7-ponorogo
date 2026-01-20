@@ -34,7 +34,7 @@ export default function Home() {
           aktivitas: ak.data || [] 
         });
       } catch (err) {
-        console.error("Error:", err);
+        console.error("Fetch error:", err);
       } finally {
         setLoading(false);
       }
@@ -50,42 +50,42 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50">
+    <div className="flex flex-col h-screen bg-[#F8FAFC]">
       <Header search={search} setSearch={setSearch} />
       
       <div className="flex flex-1 overflow-hidden">
         <Sidebar aktif={menuAktif} setAktif={setMenuAktif} />
         
-        <main className="flex-1 overflow-y-auto p-6 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px]">
+        <main className="flex-1 overflow-y-auto p-6 relative">
           {loading ? (
             <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-700"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-emerald-700"></div>
             </div>
           ) : menuAktif === 'dashboard' ? (
             <div className="space-y-6">
-              {/* Hero Section */}
-              <div className="bg-emerald-900 p-10 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
+              {/* Hero Section yang sudah diperbaiki tanda petiknya */}
+              <div className="bg-emerald-900 p-10 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
                 <div className="relative z-10">
                   <h2 className="text-3xl font-black italic">Ahlan wa Sahlan! 👋</h2>
                   <p className="opacity-70 mt-2">Sistem Database Terpadu MIN 7 Ponorogo</p>
                 </div>
-                <div className="absolute -right-4 -bottom-4 text-9xl opacity-10">🕌</div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
               </div>
 
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <StatCard label="Total Siswa" val={db.siswa.length} />
-                <StatCard label="Data Alamat" val={db.alamat.length} />
-                <StatCard label="Wali Murid" val={db.ortu.length} />
-                <StatCard label="Log Aktivitas" val={db.aktivitas.length} />
+                <StatCard label="Total Siswa" val={db.siswa.length} color="text-emerald-600" />
+                <StatCard label="Data Alamat" val={db.alamat.length} color="text-blue-600" />
+                <StatCard label="Wali Murid" val={db.ortu.length} color="text-orange-600" />
+                <StatCard label="Log Belajar" val={db.aktivitas.length} color="text-purple-600" />
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <h3 className="font-black uppercase text-slate-700">Data {menuAktif}</h3>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-                  {getFilteredData().length} Baris
+            <div className="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden">
+              <div className="p-6 border-b flex justify-between items-center bg-slate-50/50">
+                <h3 className="font-black uppercase text-slate-700">Database {menuAktif}</h3>
+                <span className="text-[10px] font-black bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full uppercase">
+                  {getFilteredData().length} Total
                 </span>
               </div>
               <DataTable data={getFilteredData()} />
@@ -97,11 +97,11 @@ export default function Home() {
   );
 }
 
-function StatCard({ label, val }) {
+function StatCard({ label, val, color }) {
   return (
-    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
+    <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
-      <h3 className="text-3xl font-black text-emerald-700 mt-1">{val}</h3>
+      <h3 className={`text-4xl font-black mt-2 ${color}`}>{val}</h3>
     </div>
   );
 }
