@@ -23,115 +23,155 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // Statistik
+  // Logika Statistik
   const totalSiswa = siswa.length;
   const siswaAktif = siswa.filter(s => s["STATUS SISWA"]?.toLowerCase() === 'masuk').length;
   const siswaTidakAktif = totalSiswa - siswaAktif;
-  const daftarKelas = Array.from(new Set(siswa.map(s => s["DITERIMA DI KELAS"]))).sort();
+  const daftarKelas = Array.from(new Set(siswa.map(s => s["DITERIMA DI KELAS"]))).sort((a, b) => Number(a) - Number(b));
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {/* SIDEBAR NAVIGATION - Ciri Khas Dashboard Beneran */}
-      <div className="w-64 bg-emerald-900 text-white hidden md:flex flex-col">
-        <div className="p-6 border-b border-emerald-800 flex items-center gap-3">
-          <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center font-black text-emerald-900">M</div>
-          <span className="font-black tracking-tighter text-lg">EMIS 4.0</span>
+    <div className="min-h-screen bg-[#F8FAFC] flex font-sans">
+      
+      {/* SIDEBAR - Navigasi Khas EMIS */}
+      <div className="w-72 bg-[#064E3B] text-white hidden lg:flex flex-col shadow-2xl">
+        <div className="p-8 border-b border-emerald-800/50 flex flex-col items-center">
+          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+            <span className="text-[#064E3B] font-black text-2xl tracking-tighter">M7</span>
+          </div>
+          <h1 className="font-black text-center leading-tight tracking-tight uppercase">Dashboard Emis<br/>MIN 7 Ponorogo</h1>
         </div>
-        <nav className="flex-1 p-4 space-y-2 mt-4">
-          <button onClick={() => setMenuAktif('dashboard')} className={`w-full text-left p-3 rounded-xl text-sm font-bold flex items-center gap-3 ${menuAktif === 'dashboard' ? 'bg-emerald-700 shadow-lg' : 'hover:bg-emerald-800 text-emerald-300'}`}>
-            <span>📊</span> Dashboard
+        
+        <nav className="flex-1 p-6 space-y-3">
+          <button onClick={() => setMenuAktif('dashboard')} className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${menuAktif === 'dashboard' ? 'bg-emerald-600 shadow-xl' : 'text-emerald-300 hover:bg-emerald-800'}`}>
+            <span className="text-lg">🏠</span> Beranda Utama
           </button>
-          <button onClick={() => setMenuAktif('siswa')} className={`w-full text-left p-3 rounded-xl text-sm font-bold flex items-center gap-3 ${menuAktif === 'siswa' ? 'bg-emerald-700 shadow-lg' : 'hover:bg-emerald-800 text-emerald-300'}`}>
-            <span>👥</span> Data Siswa
+          <button onClick={() => setMenuAktif('siswa')} className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${menuAktif === 'siswa' ? 'bg-emerald-600 shadow-xl' : 'text-emerald-300 hover:bg-emerald-800'}`}>
+            <span className="text-lg">📋</span> Data Induk Siswa
           </button>
-          <button onClick={() => setMenuAktif('rombel')} className={`w-full text-left p-3 rounded-xl text-sm font-bold flex items-center gap-3 ${menuAktif === 'rombel' ? 'bg-emerald-700 shadow-lg' : 'hover:bg-emerald-800 text-emerald-300'}`}>
-            <span>🏫</span> Rombongan Belajar
+          <button onClick={() => setMenuAktif('rombel')} className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${menuAktif === 'rombel' ? 'bg-emerald-600 shadow-xl' : 'text-emerald-300 hover:bg-emerald-800'}`}>
+            <span className="text-lg">🚪</span> Rombongan Belajar
           </button>
         </nav>
-        <div className="p-4 border-t border-emerald-800 text-[10px] text-emerald-500 text-center font-bold">
-          VERSI 2026.1.1
+        
+        <div className="p-6 text-center text-[9px] font-black text-emerald-500/50 uppercase tracking-[0.3em]">
+          Version 4.0.2 Stable
         </div>
       </div>
 
-      {/* MAIN CONTENT */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* TOP BAR */}
-        <header className="bg-white h-16 border-b flex items-center justify-between px-8 shadow-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-gray-400">Madrasah</span>
-            <span className="text-xs font-bold text-gray-300">/</span>
-            <span className="text-xs font-bold text-emerald-700">MIN 7 Ponorogo</span>
+      {/* MAIN LAYOUT */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        {/* HEADER / TOPBAR */}
+        <header className="bg-white h-20 border-b px-8 flex items-center justify-between shadow-sm flex-shrink-0">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Status Madrasah</span>
+            <h2 className="text-sm font-bold text-emerald-800 flex items-center gap-2">
+              Terakreditasi A <span className="text-slate-200">|</span> NSM: 111135020001
+            </h2>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-[11px] font-black text-gray-800 leading-none">NSM: 111135020001</p>
-              <p className="text-[10px] text-emerald-600 font-bold">Tahun Ajaran 2025/2026</p>
+          <div className="flex items-center gap-6">
+            <div className="bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100 hidden sm:block">
+              <p className="text-[9px] font-black text-emerald-700 uppercase leading-none mb-1">Tahun Ajaran</p>
+              <p className="text-xs font-bold text-emerald-900">2025/2026 Ganjil</p>
             </div>
-            <div className="w-10 h-10 bg-gray-200 rounded-full border-2 border-emerald-100 flex items-center justify-center text-gray-400 font-bold">A</div>
+            <div className="w-10 h-10 bg-slate-100 rounded-full border border-slate-200 flex items-center justify-center font-bold text-slate-400">ADM</div>
           </div>
         </header>
 
-        {/* CONTENT AREA */}
-        <main className="p-6 overflow-y-auto">
+        {/* CONTENT VIEWPORT */}
+        <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          
           {menuAktif === 'dashboard' && (
-            <div className="space-y-6">
-              {/* BANNER */}
-              <div className="bg-gradient-to-r from-emerald-800 to-emerald-600 p-8 rounded-3xl text-white shadow-xl">
-                <h2 className="text-3xl font-black mb-1">Selamat Datang di Portal EMIS</h2>
-                <p className="opacity-80 text-sm">Monitoring Data Pendidikan MIN 7 Ponorogo secara Real-Time.</p>
+            <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
+              {/* WELCOME BANNER */}
+              <div className="bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-700 p-10 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+                <div className="relative z-10">
+                  <h3 className="text-4xl font-black tracking-tighter mb-3 uppercase">Selamat Datang</h3>
+                  <p className="text-emerald-100 max-w-xl text-sm font-medium leading-relaxed">
+                    Sistem Integrasi Data EMIS MIN 7 Ponorogo. Monitoring rekapitulasi siswa, 
+                    validasi rombel, dan pemantauan status keaktifan dalam satu panel kendali.
+                  </p>
+                </div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
               </div>
 
-              {/* STATS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard label="Total Siswa" value={totalSiswa} color="blue" />
-                <StatCard label="Siswa Aktif" value={siswaAktif} color="emerald" />
-                <StatCard label="Menunggu Validasi" value={siswaTidakAktif} color="rose" />
-                <StatCard label="Rombongan Belajar" value={daftarKelas.length} color="amber" />
+              {/* STATS GRID */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+                <StatCard label="Total Terdaftar" value={totalSiswa} icon="📁" border="border-slate-300" />
+                <StatCard label="Siswa Aktif" value={siswaAktif} icon="✅" border="border-emerald-500" />
+                <StatCard label="Belum Aktif" value={siswaTidakAktif} icon="⚠️" border="border-rose-400" />
+                <StatCard label="Total Rombel" value={daftarKelas.length} icon="🏫" border="border-blue-500" />
               </div>
 
-              {/* PENGUMUMAN */}
-              <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl">
-                <p className="text-amber-800 text-xs font-bold italic">Info: Batas akhir validasi data semester ganjil adalah 30 Januari 2026.</p>
+              {/* INFO BOX */}
+              <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl flex items-start gap-4">
+                <span className="text-xl">📢</span>
+                <div>
+                  <h4 className="text-xs font-black text-amber-800 uppercase mb-1 tracking-widest">Pengumuman Terkini</h4>
+                  <p className="text-xs text-amber-900 leading-relaxed font-bold italic">
+                    Segera lakukan pemutakhiran data untuk siswa dengan status "OFFLINE" agar sinkronisasi pusat tetap berjalan lancar.
+                  </p>
+                </div>
               </div>
             </div>
           )}
 
           {menuAktif === 'siswa' && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="p-4 bg-gray-50 border-b font-bold text-xs uppercase tracking-widest text-gray-500">Daftar Induk Siswa</div>
-              <table className="w-full text-left text-xs">
-                <thead className="bg-gray-100 border-b text-gray-400 font-black">
-                  <tr><th className="p-4">Nama Lengkap</th><th className="p-4">NISN</th><th className="p-4">Kelas</th><th className="p-4 text-center">Status</th></tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {siswa.map((s, i) => (
-                    <tr key={i} className="hover:bg-emerald-50 transition-colors">
-                      <td className="p-4 font-bold text-gray-800 uppercase">{s.NAMA}</td>
-                      <td className="p-4 font-mono text-gray-400">{s.NISN || '-'}</td>
-                      <td className="p-4 font-black text-gray-500">KLS {s["DITERIMA DI KELAS"]}</td>
-                      <td className="p-4 text-center">
-                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${s["STATUS SISWA"]?.toLowerCase() === 'masuk' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-600'}`}>
-                          {s["STATUS SISWA"] || 'OFFLINE'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="max-w-7xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
+              <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                <div className="px-8 py-6 bg-slate-50 border-b flex justify-between items-center">
+                  <h3 className="font-black text-sm uppercase tracking-widest text-slate-500">Master Data Siswa</h3>
+                  <span className="bg-emerald-100 text-emerald-700 px-4 py-1 rounded-full text-[10px] font-black uppercase">Live Update</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead className="bg-white border-b text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                      <tr>
+                        <th className="px-8 py-5">Nama Lengkap</th>
+                        <th className="px-8 py-5">NISN</th>
+                        <th className="px-8 py-5">Kelas</th>
+                        <th className="px-8 py-5 text-center">Status Keaktifan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {siswa.map((s, i) => (
+                        <tr key={i} className="hover:bg-emerald-50/50 transition-all duration-200 group">
+                          <td className="px-8 py-5 font-black text-slate-800 uppercase text-xs group-hover:text-emerald-700">{s.NAMA}</td>
+                          <td className="px-8 py-5 font-mono text-slate-400 text-[11px]">{s.NISN || '---'}</td>
+                          <td className="px-8 py-5 font-bold text-slate-500 text-xs tracking-widest">KLS {s["DITERIMA DI KELAS"]}</td>
+                          <td className="px-8 py-5 text-center">
+                            <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                              s["STATUS SISWA"]?.toLowerCase() === 'masuk' ? 'bg-emerald-100 text-emerald-700 shadow-sm' : 'bg-rose-100 text-rose-600 shadow-sm'
+                            }`}>
+                              {s["STATUS SISWA"] || 'OFFLINE'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           )}
 
           {menuAktif === 'rombel' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-in zoom-in-95 duration-500">
               {daftarKelas.map((kelas, i) => {
                 const jml = siswa.filter(s => s["DITERIMA DI KELAS"] === kelas).length;
                 return (
-                  <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border-2 border-transparent hover:border-emerald-500 transition-all cursor-default group">
-                    <p className="text-[10px] font-black text-gray-300 uppercase tracking-tighter">Rombongan Belajar</p>
-                    <h4 className="text-2xl font-black text-gray-800 group-hover:text-emerald-700 transition-colors">KELAS {kelas}</h4>
-                    <div className="mt-4 flex items-center justify-between">
-                      <span className="text-3xl font-black text-emerald-600">{jml} <span className="text-[10px] text-gray-400">Siswa</span></span>
-                      <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 font-bold text-xs">GO</div>
+                  <div key={i} className="bg-white p-8 rounded-[2rem] shadow-sm border-2 border-slate-100 hover:border-emerald-500 hover:shadow-2xl transition-all group relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full -mr-12 -mt-12 group-hover:bg-emerald-500 transition-all"></div>
+                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1 relative z-10">Rombel Aktif</p>
+                    <h4 className="text-3xl font-black text-slate-800 mb-6 group-hover:text-emerald-700 transition-colors">KELAS {kelas}</h4>
+                    <div className="flex items-end justify-between relative z-10">
+                      <div>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase leading-none">Total Peserta Didik</p>
+                        <p className="text-5xl font-black text-slate-900 tracking-tighter mt-1">{jml}</p>
+                      </div>
+                      <div className="bg-slate-100 px-4 py-2 rounded-2xl group-hover:bg-emerald-100 transition-all">
+                        <span className="text-[10px] font-black text-emerald-800">Cek Detail →</span>
+                      </div>
                     </div>
                   </div>
                 )
@@ -144,17 +184,14 @@ export default function Home() {
   )
 }
 
-function StatCard({ label, value, color }: any) {
-  const colors: any = {
-    blue: "border-blue-500 text-blue-600",
-    emerald: "border-emerald-500 text-emerald-600",
-    rose: "border-rose-500 text-rose-600",
-    amber: "border-amber-500 text-amber-600"
-  };
+function StatCard({ label, value, icon, border }: any) {
   return (
-    <div className={`bg-white p-6 rounded-3xl shadow-sm border-b-4 ${colors[color]}`}>
-      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</p>
-      <p className="text-3xl font-black mt-1">{value}</p>
+    <div className={`bg-white p-7 rounded-[2rem] shadow-sm border-b-8 ${border} transition-transform hover:-translate-y-1`}>
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{label}</span>
+        <span className="text-xl opacity-40">{icon}</span>
+      </div>
+      <p className="text-4xl font-black text-slate-800 tracking-tighter">{value}</p>
     </div>
   )
 }
