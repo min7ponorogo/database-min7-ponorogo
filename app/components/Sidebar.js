@@ -29,7 +29,8 @@ export default function Sidebar({ aktif, setAktif }) {
         ))}
       </nav>
       <div className="bg-slate-100 p-4 rounded-2xl">
-        <p className="text-[9px] font-bold text-slate-500 uppercase italic text-center">"Ikhlas Beramal"</p>
+        <p className="text-[9px] font-bold text-slate-500 uppercase italic text-center">"Contact Us"</p>
+        <p className="text-[9px] font-bold text-slate-500 uppercase italic text-center">"min7ponorogo@gmail.com"</p>
       </div>
     </aside>
   );
