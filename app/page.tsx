@@ -4,98 +4,78 @@ import { createClient } from '@supabase/supabase-js';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 
-// Pastikan URL dan Key ini sudah benar dari dashboard Supabase Anda
-const supabaseUrl = 'https://psdyvshvpsatidpizfbe.supabase.co';
-const supabaseKey = 'MASUKKAN_ANON_KEY_ANDA_DISINI';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(
+  'https://psdyvshvpsatidpizfbe.supabase.co',
+  'MASUKKAN_ANON_KEY_ANDA'
+);
 
 export default function Dashboard() {
-  const [dataSiswa, setDataSiswa] = useState<any[]>([]);
-  const [dataAktivitas, setDataAktivitas] = useState<any[]>([]);
+  const [stats, setStats] = useState({ total: 0, aktif: 0, l: 0, p: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchSemuaData() {
+    async function ambilData() {
       setLoading(true);
-      try {
-        // PERHATIKAN: Nama tabel harus persis sama dengan di Supabase
-        const { data: profil, error: err1 } = await supabase.from('Data Siswa').select('*');
-        const { data: aktivitas, error: err2 } = await supabase.from('Aktivitas Belajar').select('*');
+      
+      // Ambil data profil (Data Siswa)
+      const { data: profil, error: errProfil } = await supabase
+        .from('Data Siswa')
+        .select('ID, JENIS KELAMIN');
 
-        if (err1) console.error("Gagal ambil Data Siswa:", err1.message);
-        if (err2) console.error("Gagal ambil Aktivitas Belajar:", err2.message);
+      // Ambil data status (Aktivitas Belajar)
+      const { data: aktivitas, error: errAktivitas } = await supabase
+        .from('Aktivitas Belajar')
+        .select('ID, STATUS BELAJAR');
 
-        if (profil) setDataSiswa(profil);
-        if (aktivitas) setDataAktivitas(aktivitas);
-      } catch (error) {
-        console.error("Terjadi kesalahan koneksi:", error);
-      } finally {
-        setLoading(false);
+      if (errProfil) console.error("Error Profil:", errProfil.message);
+      if (errAktivitas) console.error("Error Aktivitas:", errAktivitas.message);
+
+      if (profil && aktivitas) {
+        setStats({
+          total: profil.length,
+          l: profil.filter(s => s['JENIS KELAMIN'] === 'L').length,
+          p: profil.filter(s => s['JENIS KELAMIN'] === 'P').length,
+          aktif: aktivitas.filter(a => a['STATUS BELAJAR'] === 'Aktif').length
+        });
       }
+      setLoading(false);
     }
-    fetchSemuaData();
+    ambilData();
   }, []);
-
-  // --- LOGIKA PERHITUNGAN BERDASARKAN ID ---
-  
-  // Seluruh Siswa: Berdasarkan jumlah baris di tabel 'Data Siswa'
-  const totalSiswa = dataSiswa.length;
-
-  // Siswa Aktif: Mencari status 'Aktif' di tabel 'Aktivitas Belajar'
-  const jumlahAktif = dataAktivitas.filter(a => 
-    a['STATUS BELAJAR']?.toString().trim() === 'Aktif'
-  ).length;
-
-  // Gender: Dari tabel 'Data Siswa'
-  const lakiLaki = dataSiswa.filter(s => s['JENIS KELAMIN'] === 'L').length;
-  const perempuan = dataSiswa.filter(s => s['JENIS KELAMIN'] === 'P').length;
 
   return (
     <div className="flex flex-col h-screen bg-slate-50 text-slate-900 font-sans">
       <Header search="" setSearch={() => {}} />
-
       <div className="flex flex-1 overflow-hidden">
         <Sidebar aktif="dashboard" setAktif={() => {}} />
-
         <main className="flex-1 overflow-y-auto p-8">
           
-          {/* Banner Ahlan wa Sahlan */}
           <div className="bg-[#065f46] text-white p-10 rounded-[2.5rem] mb-10 shadow-xl relative overflow-hidden">
              <div className="relative z-10">
                 <h2 className="text-5xl font-black mb-3 italic tracking-tight">Ahlan wa Sahlan! 👋</h2>
-                <p className="text-emerald-100 text-lg font-medium opacity-90">
-                  Selamat datang di Sistem Informasi Siswa Digital MIN 7 Ponorogo.
-                </p>
+                <p className="text-emerald-100 text-lg font-medium opacity-90 italic">Sistem Informasi Siswa Digital MIN 7 Ponorogo</p>
              </div>
-             <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full -mr-20 -mt-20 blur-2xl"></div>
           </div>
 
-          {/* Grid Statistik */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <StatCard title="Seluruh Siswa" value={totalSiswa} color="text-emerald-600" loading={loading} />
-            <StatCard title="Siswa Aktif" value={jumlahAktif} color="text-emerald-600" loading={loading} />
-            <StatCard title="Laki-Laki" value={lakiLaki} color="text-blue-600" icon="👦" loading={loading} />
-            <StatCard title="Perempuan" value={perempuan} color="text-pink-600" icon="👧" loading={loading} />
+            <Card title="Seluruh Siswa" val={stats.total} load={loading} col="text-emerald-600" />
+            <Card title="Siswa Aktif" val={stats.aktif} load={loading} col="text-emerald-600" />
+            <Card title="Laki-Laki" val={stats.l} load={loading} col="text-blue-600" icon="👦" />
+            <Card title="Perempuan" val={stats.p} load={loading} col="text-pink-600" icon="👧" />
           </div>
 
-          <div className="mt-12 text-center text-slate-300 text-xs font-medium tracking-widest uppercase">
-            Data tersinkronisasi via ID Supabase
-          </div>
         </main>
       </div>
     </div>
   );
 }
 
-// Komponen Card
-function StatCard({ title, value, color, icon, loading }: any) {
+function Card({ title, val, load, col, icon }: any) {
   return (
-    <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:shadow-md">
+    <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">{title}</p>
       <div className="flex items-center justify-between">
-        <p className={`text-5xl font-black ${color}`}>
-          {loading ? "..." : value}
-        </p>
+        <p className={`text-5xl font-black ${col}`}>{load ? "..." : val}</p>
         {icon && <span className="text-3xl">{icon}</span>}
       </div>
     </div>
