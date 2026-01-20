@@ -4,9 +4,9 @@ import { createClient } from '@supabase/supabase-js';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 
-// Masukkan kredensial Supabase Anda
+// Masukkan kredensial Supabase Anda di sini
 const supabaseUrl = 'https://psdyvshvpsatidpizfbe.supabase.co'; 
-const supabaseKey = 'MASUKKAN_ANON_PUBLIC_KEY_ANDA_DISINI'; 
+const supabaseKey = 'MASUKKAN_ANON_PUBLIC_KEY_ANDA'; 
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -18,7 +18,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function fetchData() {
-      // Nama tabel sesuai di Supabase: Data Siswa
       const { data, error } = await supabase
         .from('Data Siswa')
         .select('*');
@@ -31,86 +30,68 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  // Filter pencarian
-  const filteredSiswa = dataSiswa.filter(s => 
-    s.NAMA?.toLowerCase().includes(search.toLowerCase())
-  );
-
-  // Statistik
+  // Logika Perhitungan Statistik Otomatis
   const totalSiswa = dataSiswa.length;
   const lakiLaki = dataSiswa.filter(s => s['JENIS KELAMIN'] === 'L').length;
   const perempuan = dataSiswa.filter(s => s['JENIS KELAMIN'] === 'P').length;
   const aktif = dataSiswa.filter(s => s['STATUS SISWA'] === 'Masuk').length;
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50 text-slate-900">
+    <div className="flex flex-col h-screen bg-slate-50 text-slate-900 font-sans">
       <Header search={search} setSearch={setSearch} />
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar aktif={menuAktif} setAktif={setMenuAktif} />
 
         <main className="flex-1 overflow-y-auto p-8">
-          {/* STATISTIK */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Seluruh Siswa</p>
-              <p className="text-4xl font-black text-emerald-600">{totalSiswa}</p>
+          
+          {/* BANNER AHLAN WA SAHLAN - SUDAH KEMBALI */}
+          <div className="bg-[#065f46] text-white p-10 rounded-[2.5rem] mb-10 shadow-xl relative overflow-hidden transition-all hover:shadow-emerald-900/20">
+             <div className="relative z-10">
+                <h2 className="text-5xl font-black mb-3 italic tracking-tight">Ahlan wa Sahlan! 👋</h2>
+                <p className="text-emerald-100 text-lg font-medium opacity-90">
+                  Selamat datang di Sistem Informasi Siswa Digital MIN 7 Ponorogo.
+                </p>
+             </div>
+             {/* Dekorisasi Lingkaran di Background */}
+             <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full -mr-20 -mt-20 blur-2xl"></div>
+             <div className="absolute bottom-0 left-0 w-40 h-40 bg-emerald-400/10 rounded-full -ml-10 -mb-10 blur-xl"></div>
+          </div>
+
+          {/* KARTU STATISTIK (TANPA DAFTAR SISWA DI BAWAHNYA) */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 group-hover:text-emerald-600 transition-colors">Seluruh Siswa</p>
+              <p className="text-5xl font-black text-emerald-600">{loading ? '...' : totalSiswa}</p>
             </div>
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Siswa Aktif</p>
-              <p className="text-4xl font-black text-emerald-600">{aktif}</p>
+
+            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 group-hover:text-emerald-600 transition-colors">Siswa Aktif</p>
+              <p className="text-5xl font-black text-emerald-600">{loading ? '...' : aktif}</p>
             </div>
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Laki-Laki</p>
-              <p className="text-4xl font-black text-blue-600">{lakiLaki}</p>
+
+            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 group-hover:text-blue-600 transition-colors">Laki-Laki</p>
+              <div className="flex items-center justify-between">
+                <p className="text-5xl font-black text-blue-600">{loading ? '...' : lakiLaki}</p>
+                <span className="text-3xl">👦</span>
+              </div>
             </div>
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Perempuan</p>
-              <p className="text-4xl font-black text-pink-600">{perempuan}</p>
+
+            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 group-hover:text-pink-600 transition-colors">Perempuan</p>
+              <div className="flex items-center justify-between">
+                <p className="text-5xl font-black text-pink-600">{loading ? '...' : perempuan}</p>
+                <span className="text-3xl">👧</span>
+              </div>
             </div>
           </div>
 
-          {/* TABEL */}
-          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-6 border-b border-slate-50 font-black text-slate-800">Daftar Siswa Digital</div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50/50 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-                    <th className="p-4 pl-8">No</th>
-                    <th className="p-4">Nama Lengkap</th>
-                    <th className="p-4">NISN</th>
-                    <th className="p-4">Tempat Lahir</th>
-                    <th className="p-4 text-center">Kelas</th>
-                    <th className="p-4 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={6} className="p-12 text-center text-slate-400 italic">Menyinkronkan data...</td>
-                    </tr>
-                  ) : filteredSiswa.map((s, i) => (
-                    <tr key={s.ID || i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                      <td className="p-4 pl-8 text-slate-400 font-medium">{i + 1}</td>
-                      <td className="p-4 font-bold text-slate-700 uppercase">{s.NAMA}</td>
-                      <td className="p-4 text-slate-500">{s.NISN}</td>
-                      <td className="p-4 text-slate-500">{s['TEMPAT LAHIR']}</td>
-                      <td className="p-4 text-center">
-                         <span className="bg-slate-100 px-3 py-1 rounded-lg text-[10px] font-bold">{s['DITERIMA DI KELAS']}</span>
-                      </td>
-                      <td className="p-4 text-center">
-                        {/* PERBAIKAN: Tanda kutip ditutup dengan benar di sini */}
-                        <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase">
-                          {s['STATUS SISWA']}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          {/* Bagian bawah Dashboard sekarang bersih tanpa tabel */}
+          <div className="mt-12 text-center text-slate-300 text-xs font-medium tracking-widest uppercase">
+            Data tersinkronisasi otomatis dengan Database Supabase
           </div>
+
         </main>
       </div>
     </div>
