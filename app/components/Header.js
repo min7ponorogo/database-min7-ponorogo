@@ -21,7 +21,7 @@ export default function Header({ search, setSearch }) {
         </div>
         <div>
           <h1 className="text-xl font-black tracking-tighter leading-none">MIN 7 PONOROGO</h1>
-          <p className="text-[10px] text-emerald-300 font-bold uppercase tracking-widest mt-1">Sistem Informasi Digital</p>
+          <p className="text-[10px] text-emerald-300 font-bold uppercase tracking-widest mt-1">Sistem Informasi Siswa Digital</p>
         </div>
       </div>
 
