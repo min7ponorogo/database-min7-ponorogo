@@ -1,60 +1,107 @@
 "use client";
+
 import { useState, useEffect } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import DataTable from './components/DataTable';
 
-export default function Header({ search, setSearch }) {
-  const [waktu, setWaktu] = useState(new Date());
+export default function Home() {
+  const [db, setDb] = useState({ siswa: [], alamat: [], ortu: [], aktivitas: [] });
+  const [menuAktif, setMenuAktif] = useState('dashboard');
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // Efek untuk menjalankan jam digital secara real-time
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+
   useEffect(() => {
-    const timer = setInterval(() => setWaktu(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [s, a, o, ak] = await Promise.all([
+          supabase.from('Data Siswa').select('*'),
+          supabase.from('Data Alamat').select('*'),
+          supabase.from('Data Orang Tua').select('*'),
+          supabase.from('Aktivitas Belajar').select('*')
+        ]);
+        setDb({ 
+          siswa: s.data || [], 
+          alamat: a.data || [], 
+          ortu: o.data || [], 
+          aktivitas: ak.data || [] 
+        });
+      } catch (err) {
+        console.error("Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [supabase]);
+
+  const getFilteredData = () => {
+    const currentData = db[menuAktif] || [];
+    return currentData.filter((item) => 
+      JSON.stringify(item).toLowerCase().includes(search.toLowerCase())
+    );
+  };
 
   return (
-    <header className="bg-emerald-900 text-white p-4 flex flex-col md:flex-row justify-between items-center shadow-xl border-b-4 border-emerald-500 sticky top-0 z-50">
+    <div className="flex flex-col h-screen bg-slate-50">
+      <Header search={search} setSearch={setSearch} />
       
-      {/* Bagian Kiri: Identitas Madrasah */}
-      <div className="flex items-center gap-4">
-        <div className="bg-white p-1.5 rounded-full shadow-lg ring-2 ring-emerald-400/50">
-          <img 
-            src="https://upload.wikimedia.org/wikipedia/commons/a/af/Logo_Kementerian_Agama.png" 
-            alt="Logo Kemenag" 
-            className="w-10 h-auto" 
-          />
-        </div>
-        <div>
-          <h1 className="text-xl font-black tracking-tighter leading-none">MIN 7 PONOROGO</h1>
-          <p className="text-[10px] text-emerald-300 font-bold uppercase tracking-widest mt-1 italic">
-            "Ikhlas Beramal"
-          </p>
-        </div>
-      </div>
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar aktif={menuAktif} setAktif={setMenuAktif} />
+        
+        <main className="flex-1 overflow-y-auto p-6 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px]">
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-700"></div>
+            </div>
+          ) : menuAktif === 'dashboard' ? (
+            <div className="space-y-6">
+              {/* Hero Section */}
+              <div className="bg-emerald-900 p-10 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
+                <div className="relative z-10">
+                  <h2 className="text-3xl font-black italic">Ahlan wa Sahlan! 👋</h2>
+                  <p className="opacity-70 mt-2">Sistem Database Terpadu MIN 7 Ponorogo</p>
+                </div>
+                <div className="absolute -right-4 -bottom-4 text-9xl opacity-10">🕌</div>
+              </div>
 
-      {/* Bagian Tengah: Kolom Pencarian Global */}
-      <div className="relative w-full md:w-96 my-2 md:my-0 group">
-        <input 
-          type="text" 
-          placeholder="Cari NISN, Nama Siswa, atau Orang Tua..." 
-          className="w-full bg-emerald-950/50 border border-emerald-700/50 rounded-2xl py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-emerald-400 outline-none transition-all placeholder-emerald-600 text-white"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <span className="absolute left-4 top-3 text-emerald-500 group-focus-within:text-emerald-300 transition-colors">
-          🔍
-        </span>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <StatCard label="Total Siswa" val={db.siswa.length} />
+                <StatCard label="Data Alamat" val={db.alamat.length} />
+                <StatCard label="Wali Murid" val={db.ortu.length} />
+                <StatCard label="Log Aktivitas" val={db.aktivitas.length} />
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 className="font-black uppercase text-slate-700">Data {menuAktif}</h3>
+                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                  {getFilteredData().length} Baris
+                </span>
+              </div>
+              <DataTable data={getFilteredData()} />
+            </div>
+          )}
+        </main>
       </div>
+    </div>
+  );
+}
 
-      {/* Bagian Kanan: Jam Digital Modern */}
-      <div className="hidden md:flex items-center gap-4 border-l border-emerald-800 pl-6">
-        <div className="text-right">
-          <p className="text-xl font-mono font-black text-emerald-400 leading-none tracking-tighter">
-            {waktu.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-          </p>
-          <p className="text-[9px] font-bold text-emerald-200 uppercase mt-1 tracking-tighter">
-            {waktu.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </p>
-        </div>
-      </div>
-    </header>
+function StatCard({ label, val }) {
+  return (
+    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+      <h3 className="text-3xl font-black text-emerald-700 mt-1">{val}</h3>
+    </div>
   );
 }
