@@ -1,8 +1,7 @@
 "use client";
+
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-
-// Perhatikan penulisan './components/...'
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import DataTable from './components/DataTable';
@@ -60,40 +59,40 @@ export default function Home() {
         <main className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex items-center justify-center h-full font-bold animate-pulse text-emerald-700">
-              Memuat Data Madrasah...
+              Menghubungkan ke Database MIN 7...
             </div>
           ) : menuAktif === 'dashboard' ? (
             <div className="space-y-6">
               <div className="bg-emerald-800 p-10 rounded-[2rem] text-white shadow-xl">
-                <h2 className="text-3xl font-black">Ahlan wa Sahlan! 👋</h2>
-                <p className="opacity-80 mt-2">Selamat datang di Panel Admin MIN 7 Ponorogo.</p>
+                <h2 className="text-3xl font-black italic text-white">Ahlan wa Sahlan! 👋</h2>
+                <p className="opacity-80 mt-2 text-white">Selamat datang di Panel Admin Digital MIN 7 Ponorogo.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-white">
                 <div className="bg-white p-6 rounded-3xl border shadow-sm">
-                  <p className="text-xs font-bold text-slate-400 uppercase">Total Siswa</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Siswa</p>
                   <p className="text-3xl font-black text-emerald-600">{db.siswa.length}</p>
                 </div>
                 <div className="bg-white p-6 rounded-3xl border shadow-sm">
-                  <p className="text-xs font-bold text-slate-400 uppercase">Data Alamat</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Alamat</p>
                   <p className="text-3xl font-black text-blue-600">{db.alamat.length}</p>
                 </div>
                 <div className="bg-white p-6 rounded-3xl border shadow-sm">
-                  <p className="text-xs font-bold text-slate-400 uppercase">Wali Murid</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Wali</p>
                   <p className="text-3xl font-black text-orange-600">{db.ortu.length}</p>
                 </div>
                 <div className="bg-white p-6 rounded-3xl border shadow-sm">
-                  <p className="text-xs font-bold text-slate-400 uppercase">Log Belajar</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Log</p>
                   <p className="text-3xl font-black text-purple-600">{db.aktivitas.length}</p>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-[2rem] shadow-xl border overflow-hidden">
+            <div className="bg-white rounded-[2rem] shadow-xl border overflow-hidden animate-in fade-in zoom-in-95 duration-300">
               <div className="p-6 bg-slate-50 border-b flex justify-between items-center">
-                <h3 className="font-black uppercase">Data {menuAktif}</h3>
-                <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">
-                  {getFilteredData().length} Baris
+                <h3 className="font-black uppercase text-slate-700">Data {menuAktif}</h3>
+                <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-black uppercase">
+                  {getFilteredData().length} Baris ditemukan
                 </span>
               </div>
               <DataTable data={getFilteredData()} />
