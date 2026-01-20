@@ -7,81 +7,81 @@ async function DaftarSiswa() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  // Mengambil data sesuai nama kolom di SQL Anda: NAMA, NISN, DITERIMA DI KELAS
   const { data: siswa, error } = await supabase
     .from('Data Siswa') 
-    .select('NAMA, NISN, "DITERIMA DI KELAS"')
+    .select('NAMA, NISN, NIK, "DITERIMA DI KELAS", "ASAL SEKOLAH"')
     .order('NAMA', { ascending: true })
 
-  if (error) {
-    return (
-      <div className="p-10 text-red-500 bg-red-50 rounded-xl border border-red-200">
-        <p className="font-bold">Gagal memuat data dari Supabase.</p>
-        <p className="text-xs mt-2">Pesan Error: {error.message}</p>
-        <p className="text-xs mt-1">Pastikan RLS sudah Disabled dan kolom sesuai.</p>
-      </div>
-    )
-  }
+  if (error) return <div className="p-10 text-red-600 font-bold">Koneksi Database Gagal: {error.message}</div>
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto font-sans">
-      <div className="mb-8 border-b-4 border-emerald-500 pb-4">
-        <h1 className="text-4xl font-black text-slate-900 tracking-tighter">DATABASE EMIS</h1>
-        <p className="text-slate-500 font-bold tracking-[0.3em] uppercase text-xs">MIN 7 PONOROGO</p>
+    <div className="min-h-screen bg-gray-100 p-4 md:p-10 font-sans text-slate-800">
+      {/* Header Ala EMIS */}
+      <div className="max-w-6xl mx-auto bg-white p-6 border-b-4 border-emerald-600 shadow-sm mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-black tracking-tighter text-emerald-900">EMIS DIGITAL MADRASAH</h1>
+          <p className="text-xs font-bold text-slate-500 tracking-[0.3em]">MIN 7 PONOROGO</p>
+        </div>
+        <div className="text-right hidden md:block">
+          <p className="text-[10px] font-bold text-slate-400 italic">Tahun Pelajaran 2025/2026</p>
+        </div>
       </div>
 
-      <div className="bg-white border-2 border-slate-200 rounded-3xl overflow-hidden shadow-2xl">
+      {/* Tabel Utama */}
+      <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-sm overflow-hidden border border-gray-200">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-900 text-white text-[10px] md:text-xs uppercase tracking-widest">
-              <tr>
-                <th className="p-6 border-b border-slate-700">Nama Lengkap Siswa</th>
-                <th className="p-6 border-b border-slate-700">NISN</th>
-                <th className="p-6 border-b border-slate-700 text-center">Kelas</th>
+            <thead>
+              <tr className="bg-emerald-700 text-white text-[11px] uppercase">
+                <th className="p-3 border-r border-emerald-600 w-12 text-center">No</th>
+                <th className="p-3 border-r border-emerald-600">Identitas Siswa</th>
+                <th className="p-3 border-r border-emerald-600">NISN / NIK</th>
+                <th className="p-3 border-r border-emerald-600">Asal Sekolah</th>
+                <th className="p-3 text-center">Kls</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 uppercase text-[11px] md:text-sm font-medium">
+            <tbody className="text-[12px] divide-y divide-gray-200">
               {siswa && siswa.length > 0 ? (
                 siswa.map((s: any, i: number) => (
-                  <tr key={i} className="hover:bg-emerald-50 transition-colors">
-                    <td className="p-5 text-slate-900 font-extrabold">{s.NAMA}</td>
-                    <td className="p-5 font-mono text-slate-500 letter tracking-tight">{s.NISN || "---"}</td>
-                    <td className="p-5 text-center">
-                      <span className="bg-emerald-100 text-emerald-800 px-4 py-1 rounded-full text-[10px] font-black border border-emerald-200">
-                        {s["DITERIMA DI KELAS"]}
-                      </span>
+                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="p-3 text-center border-r font-mono text-gray-400">{i + 1}</td>
+                    <td className="p-3 border-r font-black text-slate-900 uppercase">
+                      {s.NAMA}
+                    </td>
+                    <td className="p-3 border-r leading-relaxed font-mono">
+                      <div className="text-emerald-700 font-bold">{s.NISN || '-'}</div>
+                      <div className="text-gray-400 text-[10px]">{s.NIK || '-'}</div>
+                    </td>
+                    <td className="p-3 border-r text-gray-600 text-[11px] uppercase italic">
+                      {s["ASAL SEKOLAH"] || '-'}
+                    </td>
+                    <td className="p-3 text-center font-black bg-emerald-50 text-emerald-800">
+                      {s["DITERIMA DI KELAS"]}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={3} className="p-20 text-center text-slate-400 normal-case italic">
-                    Data tidak ditemukan. Pastikan tabel "Data Siswa" sudah terisi.
-                  </td>
+                  <td colSpan={5} className="p-20 text-center text-gray-400">Data tidak ditemukan dalam database EMIS.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
-      <footer className="mt-10 text-center text-slate-400 text-[10px] uppercase tracking-widest">
-        Sistem Informasi Digital MIN 7 Ponorogo © 2026
-      </footer>
+
+      <div className="max-w-6xl mx-auto mt-6 flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+        <span>© 2026 Kementerian Agama RI - Versi Digital Madrasah</span>
+        <span className="bg-gray-200 px-2 py-1 rounded text-gray-600">Status: Real-Time Sync</span>
+      </div>
     </div>
   )
 }
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#fcfdfd]">
-      <Suspense fallback={
-        <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-          <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400 font-bold text-[10px] tracking-[0.2em] animate-pulse">MENYINKRONKAN DATA EMIS...</p>
-        </div>
-      }>
-        <DaftarSiswa />
-      </Suspense>
-    </main>
+    <Suspense fallback={<div className="p-20 text-center font-bold text-emerald-700 animate-pulse uppercase tracking-widest">Sinkronisasi EMIS...</div>}>
+      <DaftarSiswa />
+    </Suspense>
   )
 }
