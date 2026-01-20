@@ -16,21 +16,18 @@ export default function Sidebar({ aktif, setAktif }) {
         isMinimal ? 'w-20' : 'w-72'
       } hidden lg:flex h-full`}
     >
-      {/* TOMBOL COLLAPSE - Hijau Emerald Tanpa Ikon Biru */}
+      {/* TOMBOL COLLAPSE - SEKARANG PAKAI SVG AGAR TIDAK BIRU */}
       <button 
         onClick={() => setIsMinimal(!isMinimal)}
         className="absolute -right-3 top-10 bg-emerald-600 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-md hover:bg-emerald-700 transition-all duration-300 z-50 border-2 border-white"
       >
-        {/* Menggunakan SVG Panah agar warna bisa dikontrol (putih), bukan emoji biru */}
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          strokeWidth={3} 
-          stroke="currentColor" 
+          viewBox="0 0 20 20" 
+          fill="currentColor" 
           className={`w-4 h-4 transition-transform duration-500 ${isMinimal ? 'rotate-180' : 'rotate-0'}`}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          <path fillRule="evenodd" d="String.127 15.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 10l3.293 3.293a1 1 0 010 1.414z" clipRule="evenodd" />
         </svg>
       </button>
 
