@@ -4,147 +4,107 @@ import { createClient } from '@supabase/supabase-js';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 
-// Konfigurasi Supabase
 const supabase = createClient(
   'https://zbqalxllyrlgtwqbourc.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpicWFseGxseXJsZ3R3cWJvdXJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzNTY2NzYsImV4cCI6MjA4MzkzMjY3Nn0.Z-FoLjelSimsWN4XW7qs8pbB_Dx0DjDkMwjNMG7udbY'
 );
 
 export default function Dashboard() {
-  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, aktif: 0, l: 0, p: 0 });
-  const [daftarSiswa, setDaftarSiswa] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
+    async function ambilData() {
       try {
-        // Ambil data profil siswa
-        const { data: siswa, error: errSiswa } = await supabase
-          .from('data_siswa_rows')
-          .select('ID, NAMA, NISN, JENIS KELAMIN');
+        setLoading(true);
+        
+        // Coba ambil dari tabel data_siswa_rows (Huruf Kecil)
+        const { data: profil, error: err1 } = await supabase
+          .from('data_siswa_rows') 
+          .select('*');
 
-        // Ambil data aktivitas belajar
-        const { data: aktivitas, error: errAktif } = await supabase
+        const { data: aktivitas, error: err2 } = await supabase
           .from('aktivitas_belajar_rows')
-          .select('ID, STATUS BELAJAR');
+          .select('*');
 
-        if (siswa) {
-          setDaftarSiswa(siswa);
+        if (err1 || err2) {
+          console.error("Detail Error:", err1 || err2);
+          setErrorMsg(err1?.message || err2?.message || "Gagal koneksi");
+          return;
+        }
+
+        if (profil) {
+          // Kita gunakan filter yang lebih fleksibel (cek L atau Laki-laki)
+          const cowok = profil.filter(s => String(s['JENIS KELAMIN']).startsWith('L')).length;
+          const cewek = profil.filter(s => String(s['JENIS KELAMIN']).startsWith('P')).length;
+          
           setStats(prev => ({
             ...prev,
-            total: siswa.length,
-            l: siswa.filter(s => s['JENIS KELAMIN'] === 'L').length,
-            p: siswa.filter(s => s['JENIS KELAMIN'] === 'P').length,
+            total: profil.length,
+            l: cowok,
+            p: cewek
           }));
         }
 
         if (aktivitas) {
-          const countAktif = aktivitas.filter(a => a['STATUS BELAJAR']?.trim() === 'Aktif').length;
-          setStats(prev => ({ ...prev, aktif: countAktif }));
+          const aktif = aktivitas.filter(a => String(a['STATUS BELAJAR']).toLowerCase() === 'aktif').length;
+          setStats(prev => ({ ...prev, aktif: aktif }));
         }
 
-      } catch (error) {
-        console.error("Koneksi Error:", error);
+      } catch (err: any) {
+        setErrorMsg(err.message);
       } finally {
         setLoading(false);
       }
     }
-
-    fetchData();
+    ambilData();
   }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50 text-slate-900 font-sans">
+    <div className="flex flex-col h-screen bg-slate-50 text-slate-900">
       <Header search="" setSearch={() => {}} />
-
       <div className="flex flex-1 overflow-hidden">
         <Sidebar aktif="dashboard" setAktif={() => {}} />
-
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 p-8 overflow-y-auto">
           
-          {/* Banner Hero */}
-          <div className="bg-[#065f46] text-white p-10 rounded-[2.5rem] mb-10 shadow-xl relative overflow-hidden transition-all hover:shadow-emerald-900/20">
-             <div className="relative z-10">
-                <h2 className="text-5xl font-black mb-3 italic tracking-tight">Ahlan wa Sahlan! 👋</h2>
-                <p className="text-emerald-100 text-lg font-medium opacity-90 italic">
-                  Sistem Informasi Siswa Digital MIN 7 Ponorogo
-                </p>
-             </div>
-             <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-          </div>
-
-          {/* Statistik Utama */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-            <StatCard title="Seluruh Siswa" value={stats.total} loading={loading} color="text-emerald-600" />
-            <StatCard title="Siswa Aktif" value={stats.aktif} loading={loading} color="text-emerald-600" />
-            <StatCard title="Laki-Laki" value={stats.l} loading={loading} color="text-blue-600" icon="👦" />
-            <StatCard title="Perempuan" value={stats.p} loading={loading} color="text-pink-600" icon="👧" />
-          </div>
-
-          {/* Tabel Preview Siswa */}
-          <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-8 border-b border-slate-50 flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-bold text-slate-800">Daftar Siswa Terkini</h3>
-                <p className="text-slate-400 text-xs">Menampilkan 10 data siswa terbaru dari database</p>
-              </div>
-              <button className="bg-emerald-50 text-emerald-700 px-6 py-2 rounded-full text-xs font-bold hover:bg-emerald-100 transition-all">
-                Lihat Semua Siswa
-              </button>
+          {/* Alert jika ada error */}
+          {errorMsg && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+              <strong>Error Database:</strong> {errorMsg} 
+              <p className="text-xs">Pastikan nama tabel di Supabase adalah "data_siswa_rows" (huruf kecil semua)</p>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-slate-50/50 text-slate-400 text-[10px] uppercase tracking-[0.2em]">
-                    <th className="p-6 pl-10">ID</th>
-                    <th className="p-6">Nama Lengkap</th>
-                    <th className="p-6">NISN</th>
-                    <th className="p-6">Gender</th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  {loading ? (
-                    <tr><td colSpan={4} className="p-20 text-center text-slate-300 font-medium italic">Mengambil data dari Supabase...</td></tr>
-                  ) : (
-                    daftarSiswa.slice(0, 10).map((s) => (
-                      <tr key={s.ID} className="border-b border-slate-50 hover:bg-slate-50/30 transition-all group">
-                        <td className="p-6 pl-10 font-medium text-slate-300 group-hover:text-emerald-500">{s.ID}</td>
-                        <td className="p-6 font-bold text-slate-700">{s.NAMA}</td>
-                        <td className="p-6 text-slate-500 font-mono">{s.NISN}</td>
-                        <td className="p-6">
-                          <span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-wider ${s['JENIS KELAMIN'] === 'L' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'}`}>
-                            {s['JENIS KELAMIN'] === 'L' ? 'LAKI-LAKI' : 'PEREMPUAN'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+          )}
+
+          <div className="bg-[#065f46] text-white p-10 rounded-[2.5rem] mb-10 shadow-xl relative overflow-hidden">
+             <h2 className="text-5xl font-black mb-3 italic">Ahlan wa Sahlan! 👋</h2>
+             <p className="opacity-90">MIN 7 Ponorogo - Data Terkoneksi</p>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <StatCard title="Total Siswa" val={stats.total} load={loading} col="text-emerald-600" />
+            <StatCard title="Siswa Aktif" val={stats.aktif} load={loading} col="text-emerald-500" />
+            <StatCard title="Laki-Laki" val={stats.l} load={loading} col="text-blue-600" />
+            <StatCard title="Perempuan" val={stats.p} load={loading} col="text-pink-600" />
+          </div>
+
+          <div className="mt-10 p-6 bg-white rounded-xl border border-dashed border-slate-300">
+             <h4 className="font-bold mb-2">Tips Debugging:</h4>
+             <p className="text-sm text-slate-500">1. Tekan <strong>F12</strong> di keyboard (Inspect Element).</p>
+             <p className="text-sm text-slate-500">2. Klik tab <strong>Console</strong>.</p>
+             <p className="text-sm text-slate-500">3. Jika ada tulisan merah "Table not found", berarti nama tabel di Supabase berbeda dengan di kode.</p>
+          </div>
         </main>
       </div>
     </div>
   );
 }
 
-function StatCard({ title, value, loading, color, icon }: any) {
+function StatCard({ title, val, load, col }: any) {
   return (
-    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all hover:shadow-lg hover:-translate-y-2 group">
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 group-hover:text-emerald-500">{title}</p>
-      <div className="flex items-center justify-between">
-        <p className={`text-6xl font-black ${color} tracking-tighter`}>
-          {loading ? (
-            <span className="animate-pulse">...</span>
-          ) : (
-            value
-          )}
-        </p>
-        {icon && <span className="text-4xl filter grayscale group-hover:grayscale-0 transition-all">{icon}</span>}
-      </div>
+    <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:scale-105">
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{title}</p>
+      <p className={`text-6xl font-black ${col}`}>{load ? "..." : val}</p>
     </div>
   );
 }
