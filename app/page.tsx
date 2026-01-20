@@ -102,8 +102,6 @@ export default function Home() {
               <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-700 p-10 rounded-3xl text-white shadow-2xl relative overflow-hidden">
                 <div className="relative z-10">
                   <h2 className="text-3xl font-black mb-2">Selamat Datang di Sistem Informasi Digital MIN 7 Ponorogo</h2>
-                  <p className="opacity-80 text-sm max-w-md">Integrasi Data EMIS secara Real-time untuk Siswa, Orang Tua, dan Aktivitas Madrasah.</p>
-                </div>
                 <div className="absolute right-10 top-1/2 -translate-y-1/2 text-9xl opacity-10">🕌</div>
               </div>
               
