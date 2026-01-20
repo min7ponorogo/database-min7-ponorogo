@@ -19,13 +19,13 @@ export default function Dashboard() {
       try {
         setLoading(true);
         
-        // Coba ambil dari tabel data_siswa_rows (Huruf Kecil)
+        // Coba ambil dari tabel data_siswa (Huruf Kecil)
         const { data: profil, error: err1 } = await supabase
-          .from('data_siswa_rows') 
+          .from('data_siswa') 
           .select('*');
 
         const { data: aktivitas, error: err2 } = await supabase
-          .from('aktivitas_belajar_rows')
+          .from('aktivitas_belajar')
           .select('*');
 
         if (err1 || err2) {
@@ -72,7 +72,7 @@ export default function Dashboard() {
           {errorMsg && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
               <strong>Error Database:</strong> {errorMsg} 
-              <p className="text-xs">Pastikan nama tabel di Supabase adalah "data_siswa_rows" (huruf kecil semua)</p>
+              <p className="text-xs">Pastikan nama tabel di Supabase adalah "data_siswa" (huruf kecil semua)</p>
             </div>
           )}
 
