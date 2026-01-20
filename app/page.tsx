@@ -1,115 +1,138 @@
 "use client";
-import { createBrowserClient } from '@supabase/ssr'
-import { useEffect, useState } from 'react'
+
+import { useState, useEffect } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
 
 export default function Home() {
-  const [data, setData] = useState({ siswa: [], alamat: [], ortu: [], aktivitas: [] });
-  const [search, setSearch] = useState('');
+  // State utama untuk menyimpan semua data dari database
+  const [db, setDb] = useState<any>({ 
+    siswa: [], 
+    alamat: [], 
+    ortu: [], 
+    aktivitas: [] 
+  });
+  
   const [menuAktif, setMenuAktif] = useState('dashboard');
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
+  // Mengambil semua data secara paralel agar cepat
   useEffect(() => {
-    const fetchAll = async () => {
-      const [s, a, o, ak] = await Promise.all([
-        supabase.from('Data Siswa').select('*'),
-        supabase.from('Data Alamat').select('*'),
-        supabase.from('Data Orang Tua').select('*'),
-        supabase.from('Aktivitas Belajar').select('*')
-      ]);
-      setData({ 
-        siswa: s.data || [], 
-        alamat: a.data || [], 
-        ortu: o.data || [], 
-        aktivitas: ak.data || [] 
-      });
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [s, a, o, ak] = await Promise.all([
+          supabase.from('Data Siswa').select('*'),
+          supabase.from('Data Alamat').select('*'),
+          supabase.from('Data Orang Tua').select('*'),
+          supabase.from('Aktivitas Belajar').select('*')
+        ]);
+
+        setDb({ 
+          siswa: s.data || [], 
+          alamat: a.data || [], 
+          ortu: o.data || [], 
+          aktivitas: ak.data || [] 
+        });
+      } catch (error) {
+        console.error("Gagal mengambil data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchAll();
+    fetchData();
   }, [supabase]);
 
-  const filtered = (arr: any[]) => arr.filter(item => 
-    JSON.stringify(item).toLowerCase().includes(search.toLowerCase())
-  );
+  // Fungsi pencarian otomatis
+  const getFilteredData = () => {
+    const currentData = db[menuAktif as keyof typeof db] || [];
+    if (!search) return currentData;
+    return currentData.filter((item: any) => 
+      JSON.stringify(item).toLowerCase().includes(search.toLowerCase())
+    );
+  };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50 text-slate-900 font-sans">
-      <header className="bg-emerald-900 text-white p-4 flex justify-between items-center border-b-4 border-emerald-500">
-        <div className="flex items-center gap-3">
-          <div className="bg-white p-1 rounded-full w-10 h-10 flex items-center justify-center">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/a/af/Logo_Kementerian_Agama.png" className="w-8" alt="Logo" />
-          </div>
-          <h1 className="font-bold uppercase tracking-tight">MIN 7 Ponorogo</h1>
-        </div>
-        <p className="text-xs text-emerald-300 hidden md:block italic">"Ikhlas Beramal"</p>
-      </header>
-
+    <div className="flex flex-col h-screen bg-slate-50 font-sans text-slate-900">
+      {/* 1. Komponen Header */}
+      <Header search={search} setSearch={setSearch} />
+      
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-64 bg-white border-r p-6 space-y-2 hidden md:block">
-          {['dashboard', 'siswa', 'ortu', 'alamat', 'aktivitas', 'rombel'].map((m) => (
-            <button 
-              key={m}
-              onClick={() => setMenuAktif(m)}
-              className={`w-full text-left p-3 rounded-xl capitalize font-semibold ${menuAktif === m ? 'bg-emerald-700 text-white' : 'text-slate-500 hover:bg-emerald-50'}`}
-            >
-              {m === 'ortu' ? 'Data Orang Tua' : m}
-            </button>
-          ))}
-        </aside>
-
-        <main className="flex-1 overflow-y-auto p-6">
-          {menuAktif === 'dashboard' && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-white p-6 rounded-2xl shadow-sm border">
-                <p className="text-xs font-bold text-slate-400 uppercase">Total Siswa</p>
-                <h3 className="text-3xl font-black text-emerald-700">{data.siswa.length}</h3>
+        {/* 2. Komponen Sidebar */}
+        <Sidebar aktif={menuAktif} setAktif={setMenuAktif} />
+        
+        {/* 3. Area Konten Utama */}
+        <main className="flex-1 overflow-y-auto p-6 lg:p-10 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px]">
+          
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-700"></div>
+            </div>
+          ) : menuAktif === 'dashboard' ? (
+            /* TAMPILAN DASHBOARD */
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-emerald-900/5 border border-white flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                  <h2 className="text-4xl font-black text-slate-900 tracking-tight">Selamat Datang! 👋</h2>
+                  <p className="text-slate-500 mt-2 font-medium italic">Sistem Informasi Digital Terpadu MIN 7 Ponorogo</p>
+                </div>
+                <div className="hidden md:flex -space-x-4">
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl shadow-inner">🕌</div>
+                  <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center text-2xl shadow-inner">📚</div>
+                </div>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-sm border">
-                <p className="text-xs font-bold text-slate-400 uppercase">Data Alamat</p>
-                <h3 className="text-3xl font-black text-blue-600">{data.alamat.length}</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard label="Total Siswa" val={db.siswa.length} color="emerald" />
+                <StatCard label="Data Alamat" val={db.alamat.length} color="blue" />
+                <StatCard label="Data Wali" val={db.ortu.length} color="orange" />
+                <StatCard label="Log Aktivitas" val={db.aktivitas.length} color="purple" />
               </div>
             </div>
-          )}
-
-          {['siswa', 'ortu', 'alamat', 'aktivitas'].includes(menuAktif) && (
-            <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
-              <div className="p-4 border-b flex justify-between items-center">
-                <h3 className="font-bold uppercase text-sm">Tabel {menuAktif}</h3>
-                <input 
-                  type="text" 
-                  placeholder="Cari..." 
-                  className="bg-slate-100 px-3 py-1 rounded-md text-sm outline-none"
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 text-slate-500">
-                    <tr>
-                      {menuAktif === 'siswa' && <><th className="p-3">Nama</th><th className="p-3">NISN</th><th className="p-3">Kelas</th></>}
-                      {menuAktif === 'ortu' && <><th className="p-3">Ayah</th><th className="p-3">Ibu</th><th className="p-3">Pekerjaan</th></>}
-                      {menuAktif === 'alamat' && <><th className="p-3">ID</th><th className="p-3">Alamat Lengkap</th></>}
-                      {menuAktif === 'aktivitas' && <><th className="p-3">Tahun</th><th className="p-3">Rombel</th><th className="p-3">Status</th></>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered(data[menuAktif as keyof typeof data]).map((item: any, i: number) => (
-                      <tr key={i} className="border-t hover:bg-slate-50">
-                        {menuAktif === 'siswa' && <><td className="p-3 font-semibold">{item.NAMA}</td><td className="p-3">{item.NISN}</td><td className="p-3">KL {item["DITERIMA DI KELAS"]}</td></>}
-                        {menuAktif === 'ortu' && <><td className="p-3 font-semibold">{item["NAMA AYAH"]}</td><td className="p-3">{item["NAMA IBU"]}</td><td className="p-3">{item["PEKERJAAN UTAMA AYAH"]}</td></>}
-                        {menuAktif === 'alamat' && <><td className="p-3">{item.ID}</td><td className="p-3">{item.ALAMAT}</td></>}
-                        {menuAktif === 'aktivitas' && <><td className="p-3">{item["TAHUN AJARAN"]}</td><td className="p-3">{item.ROMBEL}</td><td className="p-3">{item["STATUS BELAJAR"]}</td></>}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          ) : (
+            /* TAMPILAN TABEL DATA */
+            <div className="bg-white rounded-[2rem] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500">
+               <div className="p-8 border-b border-slate-50 flex justify-between items-center">
+                  <h3 className="text-xl font-black uppercase tracking-tight text-slate-800">Data {menuAktif}</h3>
+                  <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">
+                    {getFilteredData().length} Baris ditemukan
+                  </span>
+               </div>
+               
+               <div className="p-4">
+                  {/* Di sini nanti kita panggil <DataTable /> */}
+                  <p className="text-center text-slate-400 p-20 italic">
+                    Gunakan file DataTable.tsx untuk menampilkan isi tabel ini agar lebih rapi.
+                  </p>
+               </div>
             </div>
           )}
         </main>
       </div>
+    </div>
+  );
+}
+
+// Komponen Kecil untuk Kartu Statistik agar tidak mengulang kode
+function StatCard({ label, val, color }: { label: string, val: number, color: string }) {
+  const colors: any = {
+    emerald: "text-emerald-600 bg-emerald-50",
+    blue: "text-blue-600 bg-blue-50",
+    orange: "text-orange-600 bg-orange-50",
+    purple: "text-purple-600 bg-purple-50",
+  };
+  
+  return (
+    <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all">
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+      <h3 className={`text-4xl font-black mt-2 ${colors[color].split(' ')[0]}`}>{val}</h3>
     </div>
   );
 }
