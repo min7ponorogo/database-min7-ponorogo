@@ -1,107 +1,49 @@
 "use client";
-
 import { useState, useEffect } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
-import Header from './components/Header';
-import Sidebar from './components/Sidebar';
-import DataTable from './components/DataTable';
 
-export default function Home() {
-  const [db, setDb] = useState({ siswa: [], alamat: [], ortu: [], aktivitas: [] });
-  const [menuAktif, setMenuAktif] = useState('dashboard');
-  const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
+export default function Header({ search, setSearch }) {
+  const [waktu, setWaktu] = useState(new Date());
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [s, a, o, ak] = await Promise.all([
-          supabase.from('Data Siswa').select('*'),
-          supabase.from('Data Alamat').select('*'),
-          supabase.from('Data Orang Tua').select('*'),
-          supabase.from('Aktivitas Belajar').select('*')
-        ]);
-        setDb({ 
-          siswa: s.data || [], 
-          alamat: a.data || [], 
-          ortu: o.data || [], 
-          aktivitas: ak.data || [] 
-        });
-      } catch (err) {
-        console.error("Fetch error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [supabase]);
-
-  const getFilteredData = () => {
-    const currentData = db[menuAktif] || [];
-    return currentData.filter((item) => 
-      JSON.stringify(item).toLowerCase().includes(search.toLowerCase())
-    );
-  };
+    const timer = setInterval(() => setWaktu(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-[#F8FAFC]">
-      <Header search={search} setSearch={setSearch} />
-      
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar aktif={menuAktif} setAktif={setMenuAktif} />
-        
-        <main className="flex-1 overflow-y-auto p-6 relative">
-          {loading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-emerald-700"></div>
-            </div>
-          ) : menuAktif === 'dashboard' ? (
-            <div className="space-y-6">
-              {/* Hero Section yang sudah diperbaiki tanda petiknya */}
-              <div className="bg-emerald-900 p-10 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
-                <div className="relative z-10">
-                  <h2 className="text-3xl font-black italic">Ahlan wa Sahlan! 👋</h2>
-                  <p className="opacity-70 mt-2">Sistem Database Terpadu MIN 7 Ponorogo</p>
-                </div>
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-              </div>
-
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <StatCard label="Total Siswa" val={db.siswa.length} color="text-emerald-600" />
-                <StatCard label="Data Alamat" val={db.alamat.length} color="text-blue-600" />
-                <StatCard label="Wali Murid" val={db.ortu.length} color="text-orange-600" />
-                <StatCard label="Log Belajar" val={db.aktivitas.length} color="text-purple-600" />
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden">
-              <div className="p-6 border-b flex justify-between items-center bg-slate-50/50">
-                <h3 className="font-black uppercase text-slate-700">Database {menuAktif}</h3>
-                <span className="text-[10px] font-black bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full uppercase">
-                  {getFilteredData().length} Total
-                </span>
-              </div>
-              <DataTable data={getFilteredData()} />
-            </div>
-          )}
-        </main>
+    <header className="bg-emerald-900 text-white p-4 flex flex-col md:flex-row justify-between items-center shadow-xl border-b-4 border-emerald-500 sticky top-0 z-50">
+      <div className="flex items-center gap-4">
+        <div className="bg-white p-1 rounded-full shadow-lg border-2 border-emerald-400">
+          <img 
+            src="https://upload.wikimedia.org/wikipedia/commons/a/af/Logo_Kementerian_Agama.png" 
+            alt="Logo" 
+            className="w-10 h-auto" 
+          />
+        </div>
+        <div>
+          <h1 className="text-xl font-black tracking-tighter leading-none">MIN 7 PONOROGO</h1>
+          <p className="text-[10px] text-emerald-300 font-bold uppercase tracking-widest mt-1">Sistem Informasi Digital</p>
+        </div>
       </div>
-    </div>
-  );
-}
 
-function StatCard({ label, val, color }) {
-  return (
-    <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
-      <h3 className={`text-4xl font-black mt-2 ${color}`}>{val}</h3>
-    </div>
+      <div className="relative w-full md:w-96 my-2 md:my-0">
+        <input 
+          type="text" 
+          placeholder="Cari data siswa atau wali..." 
+          className="w-full bg-emerald-950/50 border border-emerald-700/50 rounded-2xl py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-white transition-all"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <span className="absolute left-3.5 top-2.5 opacity-40">🔍</span>
+      </div>
+
+      <div className="hidden md:block text-right border-l border-emerald-800 pl-6">
+        <p className="text-lg font-mono font-black text-emerald-400 leading-none">
+          {waktu.toLocaleTimeString('id-ID')}
+        </p>
+        <p className="text-[9px] font-bold text-emerald-200 uppercase mt-1">
+          {waktu.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long'})}
+        </p>
+      </div>
+    </header>
   );
 }
