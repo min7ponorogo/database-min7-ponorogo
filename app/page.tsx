@@ -1,87 +1,108 @@
+"use client";
 import { createBrowserClient } from '@supabase/ssr'
-import { Suspense } from 'react'
+import { useEffect, useState } from 'react'
 
-async function DaftarSiswa() {
+export default function Home() {
+  const [siswa, setSiswa] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  );
 
-  const { data: siswa, error } = await supabase
-    .from('Data Siswa') 
-    .select('NAMA, NISN, NIK, "DITERIMA DI KELAS", "ASAL SEKOLAH"')
-    .order('NAMA', { ascending: true })
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data } = await supabase
+        .from('Data Siswa')
+        .select('NAMA, NISN, NIK, "DITERIMA DI KELAS", "ASAL SEKOLAH", "STATUS SISWA"')
+        .order('NAMA', { ascending: true });
+      if (data) setSiswa(data);
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
 
-  if (error) return <div className="p-10 text-red-600 font-bold">Koneksi Database Gagal: {error.message}</div>
+  const filteredSiswa = siswa.filter(s => 
+    s.NAMA?.toLowerCase().includes(search.toLowerCase()) || 
+    s.NISN?.includes(search)
+  );
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-10 font-sans text-slate-800">
-      {/* Header Ala EMIS */}
-      <div className="max-w-6xl mx-auto bg-white p-6 border-b-4 border-emerald-600 shadow-sm mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-black tracking-tighter text-emerald-900">EMIS DIGITAL MADRASAH</h1>
-          <p className="text-xs font-bold text-slate-500 tracking-[0.3em]">MIN 7 PONOROGO</p>
-        </div>
-        <div className="text-right hidden md:block">
-          <p className="text-[10px] font-bold text-slate-400 italic">Tahun Pelajaran 2025/2026</p>
-        </div>
-      </div>
-
-      {/* Tabel Utama */}
-      <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-sm overflow-hidden border border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-emerald-700 text-white text-[11px] uppercase">
-                <th className="p-3 border-r border-emerald-600 w-12 text-center">No</th>
-                <th className="p-3 border-r border-emerald-600">Identitas Siswa</th>
-                <th className="p-3 border-r border-emerald-600">NISN / NIK</th>
-                <th className="p-3 border-r border-emerald-600">Asal Sekolah</th>
-                <th className="p-3 text-center">Kls</th>
-              </tr>
-            </thead>
-            <tbody className="text-[12px] divide-y divide-gray-200">
-              {siswa && siswa.length > 0 ? (
-                siswa.map((s: any, i: number) => (
-                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="p-3 text-center border-r font-mono text-gray-400">{i + 1}</td>
-                    <td className="p-3 border-r font-black text-slate-900 uppercase">
-                      {s.NAMA}
-                    </td>
-                    <td className="p-3 border-r leading-relaxed font-mono">
-                      <div className="text-emerald-700 font-bold">{s.NISN || '-'}</div>
-                      <div className="text-gray-400 text-[10px]">{s.NIK || '-'}</div>
-                    </td>
-                    <td className="p-3 border-r text-gray-600 text-[11px] uppercase italic">
-                      {s["ASAL SEKOLAH"] || '-'}
-                    </td>
-                    <td className="p-3 text-center font-black bg-emerald-50 text-emerald-800">
-                      {s["DITERIMA DI KELAS"]}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="p-20 text-center text-gray-400">Data tidak ditemukan dalam database EMIS.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+    <div className="min-h-screen bg-[#f0f2f5] font-sans text-slate-700">
+      {/* Top Navigation Bar */}
+      <div className="bg-emerald-800 text-white p-4 shadow-lg">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="bg-white p-1.5 rounded-lg">
+              <div className="w-8 h-8 bg-emerald-600 rounded flex items-center justify-center font-black text-white">M7</div>
+            </div>
+            <div>
+              <h1 className="text-sm font-black tracking-tight leading-none">EMIS MOBILE</h1>
+              <p className="text-[10px] opacity-70 uppercase tracking-widest">MIN 7 Ponorogo</p>
+            </div>
+          </div>
+          <div className="text-[10px] font-bold bg-emerald-900 px-3 py-1 rounded-full border border-emerald-700">
+            TA 2025/2026
+          </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto mt-6 flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-        <span>© 2026 Kementerian Agama RI - Versi Digital Madrasah</span>
-        <span className="bg-gray-200 px-2 py-1 rounded text-gray-600">Status: Real-Time Sync</span>
+      <div className="max-w-6xl mx-auto p-4 md:p-8">
+        {/* Welcome Card & Search */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mb-6">
+          <h2 className="text-xl font-black text-slate-800 mb-1">Pencarian Data Siswa</h2>
+          <p className="text-xs text-slate-500 mb-4">Silakan masukkan Nama atau NISN siswa untuk memverifikasi data.</p>
+          <input 
+            type="text"
+            placeholder="Ketik Nama Siswa di sini..."
+            className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-emerald-500 outline-none transition-all font-medium"
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {/* Data Counter */}
+        <div className="flex gap-4 mb-4">
+          <div className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md">
+            TOTAL: {siswa.length} SISWA
+          </div>
+          {search && (
+            <div className="bg-white text-emerald-600 border border-emerald-600 px-4 py-2 rounded-lg text-xs font-bold">
+              DITEMUKAN: {filteredSiswa.length}
+            </div>
+          )}
+        </div>
+
+        {/* List Data */}
+        <div className="grid gap-3">
+          {loading ? (
+            <div className="text-center p-20 text-slate-400 font-bold animate-pulse">Sinkronisasi Server...</div>
+          ) : filteredSiswa.map((s, i) => (
+            <div key={i} className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-emerald-500 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-md transition-shadow">
+              <div className="flex gap-4 items-center">
+                <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold text-xs">
+                  {i + 1}
+                </div>
+                <div>
+                  <h3 className="font-black text-slate-900 uppercase text-sm">{s.NAMA}</h3>
+                  <div className="flex gap-2 mt-1">
+                    <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-mono">NISN: {s.NISN || '-'}</span>
+                    <span className="text-[10px] bg-emerald-50 px-2 py-0.5 rounded text-emerald-700 font-bold">KELAS {s["DITERIMA DI KELAS"]}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="md:text-right border-t md:border-t-0 pt-3 md:pt-0">
+                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Asal Sekolah</p>
+                <p className="text-[11px] font-bold text-slate-600 uppercase">{s["ASAL SEKOLAH"] || '---'}</p>
+                <span className="inline-block mt-1 text-[9px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-black uppercase">
+                  {s["STATUS SISWA"] || 'MASUK'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
-  )
-}
-
-export default function Home() {
-  return (
-    <Suspense fallback={<div className="p-20 text-center font-bold text-emerald-700 animate-pulse uppercase tracking-widest">Sinkronisasi EMIS...</div>}>
-      <DaftarSiswa />
-    </Suspense>
   )
 }
