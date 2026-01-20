@@ -16,10 +16,10 @@ export default function Sidebar({ aktif, setAktif }) {
         isMinimal ? 'w-20' : 'w-72'
       } hidden lg:flex h-full`}
     >
-      {/* TOMBOL COLLAPSE - Hijau Emerald Pekat */}
+      {/* TOMBOL COLLAPSE - Hijau Emerald, Tanpa Biru */}
       <button 
         onClick={() => setIsMinimal(!isMinimal)}
-        className="absolute -right-3 top-10 bg-emerald-700 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-md hover:bg-emerald-800 transition-all duration-300 z-50 border-2 border-white"
+        className="absolute -right-3 top-10 bg-emerald-600 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-md hover:bg-emerald-700 transition-all duration-300 z-50 border-2 border-white"
       >
         <span className={`text-[10px] transition-transform duration-500 ${isMinimal ? 'rotate-180' : 'rotate-0'}`}>
           ◀
@@ -56,11 +56,11 @@ export default function Sidebar({ aktif, setAktif }) {
           ))}
         </nav>
 
-        {/* Contact Us - Box Hijau Muda */}
+        {/* Footer / Contact Us */}
         <div className={`transition-all duration-500 ${isMinimal ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`}>
-          <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
-            <p className="text-[9px] font-black text-emerald-800 uppercase text-center mb-1">Contact Us</p>
-            <p className="text-[10px] font-bold text-emerald-900 text-center truncate">min7ponorogo@gmail.com</p>
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <p className="text-[9px] font-black text-slate-400 uppercase text-center mb-1">Contact Us</p>
+            <p className="text-[10px] font-bold text-slate-800 text-center truncate">min7ponorogo@gmail.com</p>
           </div>
         </div>
       </div>
