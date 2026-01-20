@@ -85,9 +85,61 @@ export default function Home() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="text-[10px] uppercase text-slate-400 font-bold bg-slate-50">
-                    <tr><th className="p-4">Nama Lengkap</th><th className="p-4">NISN</th><th className="p-4">Kelas</th><th className="p-4">Status Keaktifan</th></tr>
+                    <tr>
+                      <th className="p-4">Nama Lengkap</th>
+                      <th className="p-4">NISN</th>
+                      <th className="p-4">Kelas</th>
+                      <th className="p-4">Status</th>
+                    </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs">
                     {siswa.map((s, i) => (
                       <tr key={i} className="hover:bg-slate-50">
-                        <td className="p-4 font-black text-slate-8
+                        <td className="p-4 font-black text-slate-800 uppercase">{s.NAMA}</td>
+                        <td className="p-4 font-mono text-slate-400">{s.NISN || '-'}</td>
+                        <td className="p-4 font-bold text-slate-600">KLS {s["DITERIMA DI KELAS"]}</td>
+                        <td className="p-4">
+                          <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${s["STATUS SISWA"]?.toLowerCase() === 'masuk' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-600'}`}>
+                            {s["STATUS SISWA"] || 'OFFLINE'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+                {dataRombel.map((r, i) => (
+                  <div key={i} className="bg-slate-50 p-6 rounded-2xl border-2 border-slate-100">
+                    <h4 className="text-xl font-black text-emerald-800 mb-4">KELAS {r.namaKelas}</h4>
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase">Total Siswa</p>
+                        <p className="text-4xl font-black text-slate-800">{r.jumlah}</p>
+                      </div>
+                      <div className="text-[10px] font-bold text-slate-500 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                        L: {r.lk} | P: {r.pr}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <footer className="mt-20 text-center text-[10px] font-black text-slate-300 uppercase tracking-[1em]">EMIS MIN 7 Ponorogo</footer>
+    </div>
+  )
+}
+
+function StatCard({ title, value, color, loading }: any) {
+  const colors: any = { emerald: "text-emerald-600", rose: "text-rose-600", blue: "text-blue-600", slate: "text-slate-800" };
+  return (
+    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+      <p className="text-[10px] font-black text-slate-400 uppercase mb-1">{title}</p>
+      <p className={`text-3xl font-black ${colors[color]}`}>{loading ? '...' : value}</p>
+    </div>
+  );
+}
