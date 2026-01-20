@@ -87,13 +87,6 @@ export default function Dashboard() {
             <StatCard title="Laki-Laki" val={stats.l} load={loading} col="text-blue-600" />
             <StatCard title="Perempuan" val={stats.p} load={loading} col="text-pink-600" />
           </div>
-
-          <div className="mt-10 p-6 bg-white rounded-xl border border-dashed border-slate-300">
-             <h4 className="font-bold mb-2">Tips Debugging:</h4>
-             <p className="text-sm text-slate-500">1. Tekan <strong>F12</strong> di keyboard (Inspect Element).</p>
-             <p className="text-sm text-slate-500">2. Klik tab <strong>Console</strong>.</p>
-             <p className="text-sm text-slate-500">3. Jika ada tulisan merah "Table not found", berarti nama tabel di Supabase berbeda dengan di kode.</p>
-          </div>
         </main>
       </div>
     </div>
