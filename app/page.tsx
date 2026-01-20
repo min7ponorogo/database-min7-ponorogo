@@ -18,9 +18,9 @@ export default function Dashboard() {
     async function ambilData() {
       setLoading(true);
       try {
-        // NAMA TABEL HARUS PERSIS: 'Data Siswa_rows' dan 'Aktivitas Belajar_rows'
-        const { data: profil } = await supabase.from('Data Siswa_rows').select('ID, JENIS KELAMIN');
-        const { data: aktivitas } = await supabase.from('Aktivitas Belajar_rows').select('ID, STATUS BELAJAR');
+        // NAMA TABEL HARUS PERSIS: 'Data Siswa' dan 'Aktivitas Belajar_rows'
+        const { data: profil } = await supabase.from('Data Siswa').select('ID, JENIS KELAMIN');
+        const { data: aktivitas } = await supabase.from('Aktivitas Belajar').select('ID, STATUS BELAJAR');
 
         if (profil) {
           setStats(prev => ({
