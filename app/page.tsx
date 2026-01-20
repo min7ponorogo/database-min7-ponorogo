@@ -7,52 +7,48 @@ async function DaftarSiswa() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  // Mengambil data dengan nama kolom KAPITAL sesuai file CSV Anda
+  // Mengambil data sesuai nama kolom di SQL Anda: NAMA, NISN, DITERIMA DI KELAS
   const { data: siswa, error } = await supabase
     .from('Data Siswa') 
-    .select('"NAMA LENGKAP", NISN, KELAS')
-    .order('NAMA LENGKAP', { ascending: true })
+    .select('NAMA, NISN, "DITERIMA DI KELAS"')
+    .order('NAMA', { ascending: true })
 
   if (error) {
     return (
       <div className="p-10 text-red-500 bg-red-50 rounded-xl border border-red-200">
         <p className="font-bold">Gagal memuat data dari Supabase.</p>
         <p className="text-xs mt-2">Pesan Error: {error.message}</p>
-        <p className="text-xs mt-1">Pastikan nama tabel "Data Siswa" dan kolom sudah benar.</p>
+        <p className="text-xs mt-1">Pastikan RLS sudah Disabled dan kolom sesuai.</p>
       </div>
     )
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto font-sans">
-      <div className="mb-8 text-center md:text-left border-b pb-6 border-slate-200">
-        <h1 className="text-4xl font-black text-slate-900 tracking-tight">DATABASE SISWA</h1>
-        <p className="text-emerald-600 font-bold tracking-widest uppercase text-sm">MIN 7 PONOROGO</p>
+    <div className="p-4 md:p-8 max-w-6xl mx-auto font-sans">
+      <div className="mb-8 border-b-4 border-emerald-500 pb-4">
+        <h1 className="text-4xl font-black text-slate-900 tracking-tighter">DATABASE EMIS</h1>
+        <p className="text-slate-500 font-bold tracking-[0.3em] uppercase text-xs">MIN 7 PONOROGO</p>
       </div>
 
-      <div className="bg-white border rounded-2xl overflow-hidden shadow-xl border-slate-200">
+      <div className="bg-white border-2 border-slate-200 rounded-3xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-900 text-white text-[10px] md:text-xs uppercase tracking-[0.2em]">
+            <thead className="bg-slate-900 text-white text-[10px] md:text-xs uppercase tracking-widest">
               <tr>
-                <th className="p-5 border-b border-slate-700">Nama Lengkap</th>
-                <th className="p-5 border-b border-slate-700">NISN</th>
-                <th className="p-5 border-b border-slate-700 text-center">Kelas</th>
+                <th className="p-6 border-b border-slate-700">Nama Lengkap Siswa</th>
+                <th className="p-6 border-b border-slate-700">NISN</th>
+                <th className="p-6 border-b border-slate-700 text-center">Kelas</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 uppercase text-[11px] md:text-sm">
+            <tbody className="divide-y divide-slate-100 uppercase text-[11px] md:text-sm font-medium">
               {siswa && siswa.length > 0 ? (
                 siswa.map((s: any, i: number) => (
-                  <tr key={i} className="hover:bg-emerald-50 transition-all duration-200">
-                    <td className="p-5 font-bold text-slate-800 border-l-4 border-l-transparent hover:border-l-emerald-500">
-                      {s["NAMA LENGKAP"]}
-                    </td>
-                    <td className="p-5 font-mono text-slate-500 tracking-tighter">
-                      {s.NISN || "-"}
-                    </td>
+                  <tr key={i} className="hover:bg-emerald-50 transition-colors">
+                    <td className="p-5 text-slate-900 font-extrabold">{s.NAMA}</td>
+                    <td className="p-5 font-mono text-slate-500 letter tracking-tight">{s.NISN || "---"}</td>
                     <td className="p-5 text-center">
-                      <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-[10px] font-black border border-slate-200">
-                        {s.KELAS || "-"}
+                      <span className="bg-emerald-100 text-emerald-800 px-4 py-1 rounded-full text-[10px] font-black border border-emerald-200">
+                        {s["DITERIMA DI KELAS"]}
                       </span>
                     </td>
                   </tr>
@@ -60,7 +56,7 @@ async function DaftarSiswa() {
               ) : (
                 <tr>
                   <td colSpan={3} className="p-20 text-center text-slate-400 normal-case italic">
-                    Belum ada data siswa yang tersimpan di tabel "Data Siswa".
+                    Data tidak ditemukan. Pastikan tabel "Data Siswa" sudah terisi.
                   </td>
                 </tr>
               )}
@@ -68,22 +64,20 @@ async function DaftarSiswa() {
           </table>
         </div>
       </div>
-      
-      <div className="mt-8 p-4 bg-slate-100 rounded-xl text-[10px] text-slate-500 flex justify-between items-center">
-        <span>© 2026 Operator EMIS MIN 7 Ponorogo</span>
-        <span className="font-bold text-emerald-700 underline uppercase tracking-widest">Next.js 16.1 Secure Build</span>
-      </div>
+      <footer className="mt-10 text-center text-slate-400 text-[10px] uppercase tracking-widest">
+        Sistem Informasi Digital MIN 7 Ponorogo © 2026
+      </footer>
     </div>
   )
 }
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#f8fafc]">
+    <main className="min-h-screen bg-[#fcfdfd]">
       <Suspense fallback={
-        <div className="flex flex-col items-center justify-center min-h-screen gap-4 text-center">
-          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-500 font-bold text-sm animate-pulse tracking-widest">MENYINKRONKAN DATA EMIS...</p>
+        <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+          <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-400 font-bold text-[10px] tracking-[0.2em] animate-pulse">MENYINKRONKAN DATA EMIS...</p>
         </div>
       }>
         <DaftarSiswa />
