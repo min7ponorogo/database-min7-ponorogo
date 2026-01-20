@@ -16,10 +16,10 @@ export default function Sidebar({ aktif, setAktif }) {
         isMinimal ? 'w-24' : 'w-72'
       } hidden lg:flex h-full`}
     >
-      {/* Tombol Toggle yang dipercantik */}
+      {/* Tombol Toggle - Sekarang Hijau Emerald */}
       <button 
         onClick={() => setIsMinimal(!isMinimal)}
-        className="absolute -right-4 top-12 bg-white text-emerald-600 w-8 h-8 rounded-full flex items-center justify-center shadow-md border border-slate-100 hover:bg-emerald-600 hover:text-white transition-all duration-300 z-50 group-hover:scale-110"
+        className="absolute -right-4 top-12 bg-white text-emerald-600 w-8 h-8 rounded-full flex items-center justify-center shadow-md border border-emerald-50 hover:bg-emerald-600 hover:text-white transition-all duration-300 z-50 group-hover:scale-110"
       >
         <span className={`transition-transform duration-500 ${isMinimal ? 'rotate-180' : 'rotate-0'}`}>
           {isMinimal ? '➔' : '⬅'}
@@ -44,7 +44,7 @@ export default function Sidebar({ aktif, setAktif }) {
               className={`w-full flex items-center gap-4 p-4 rounded-[1.25rem] font-bold transition-all duration-300 group/item ${
                 aktif === m.id 
                 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100 scale-[1.02]' 
-                : 'text-slate-500 hover:bg-slate-50 hover:translate-x-1'
+                : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 hover:translate-x-1'
               } ${isMinimal ? 'justify-center' : ''}`}
             >
               <span className={`text-xl transition-transform duration-300 ${aktif === m.id ? 'scale-110' : ''}`}>
@@ -59,13 +59,13 @@ export default function Sidebar({ aktif, setAktif }) {
           ))}
         </nav>
 
-        {/* Bagian Contact Us yang lebih rapi */}
+        {/* Bagian Contact Us - Hijau Emerald */}
         <div className={`mt-auto transition-all duration-500 ${
           isMinimal ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
         }`}>
-          <div className="bg-slate-50 p-4 rounded-3xl border border-slate-100">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter text-center mb-1">Hubungi Kami</p>
-            <p className="text-[10px] font-bold text-emerald-800 text-center truncate">min7ponorogo@gmail.com</p>
+          <div className="bg-emerald-50/50 p-4 rounded-3xl border border-emerald-100">
+            <p className="text-[9px] font-black text-emerald-800/40 uppercase tracking-tighter text-center mb-1">Hubungi Kami</p>
+            <p className="text-[10px] font-bold text-emerald-900 text-center truncate">min7ponorogo@gmail.com</p>
           </div>
         </div>
       </div>
