@@ -16,25 +16,31 @@ export default function Sidebar({ aktif, setAktif }) {
         isMinimal ? 'w-20' : 'w-72'
       } hidden lg:flex h-full`}
     >
-      {/* TOMBOL COLLAPSE - Hijau Emerald, Tanpa Biru */}
+      {/* TOMBOL COLLAPSE - Hijau Emerald Tanpa Ikon Biru */}
       <button 
         onClick={() => setIsMinimal(!isMinimal)}
         className="absolute -right-3 top-10 bg-emerald-600 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-md hover:bg-emerald-700 transition-all duration-300 z-50 border-2 border-white"
       >
-        <span className={`text-[10px] transition-transform duration-500 ${isMinimal ? 'rotate-180' : 'rotate-0'}`}>
-          ◀
-        </span>
+        {/* Menggunakan SVG Panah agar warna bisa dikontrol (putih), bukan emoji biru */}
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          strokeWidth={3} 
+          stroke="currentColor" 
+          className={`w-4 h-4 transition-transform duration-500 ${isMinimal ? 'rotate-180' : 'rotate-0'}`}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
       </button>
 
       <div className="p-6 flex flex-col h-full overflow-hidden">
-        {/* Label Navigasi */}
         <p className={`text-[10px] font-black text-slate-300 uppercase tracking-widest mb-8 transition-opacity duration-300 ${
           isMinimal ? 'opacity-0' : 'opacity-100'
         }`}>
           {!isMinimal && "NAVIGASI"}
         </p>
 
-        {/* List Menu */}
         <nav className="space-y-3 flex-1">
           {menus.map((m) => (
             <button
@@ -56,7 +62,6 @@ export default function Sidebar({ aktif, setAktif }) {
           ))}
         </nav>
 
-        {/* Footer / Contact Us */}
         <div className={`transition-all duration-500 ${isMinimal ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`}>
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
             <p className="text-[9px] font-black text-slate-400 uppercase text-center mb-1">Contact Us</p>
