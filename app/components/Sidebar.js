@@ -12,26 +12,26 @@ export default function Sidebar({ aktif, setAktif }) {
 
   return (
     <aside 
-      className={`bg-white border-r border-slate-100 transition-all duration-500 ease-in-out flex flex-col shadow-sm relative group ${
-        isMinimal ? 'w-24' : 'w-72'
+      className={`bg-white border-r border-slate-100 transition-all duration-500 ease-in-out flex flex-col shadow-sm relative ${
+        isMinimal ? 'w-20' : 'w-72'
       } hidden lg:flex h-full`}
     >
-      {/* Tombol Toggle - Sekarang Hijau Emerald */}
+      {/* TOMBOL COLLAPSE - Hijau Emerald Pekat */}
       <button 
         onClick={() => setIsMinimal(!isMinimal)}
-        className="absolute -right-4 top-12 bg-white text-emerald-600 w-8 h-8 rounded-full flex items-center justify-center shadow-md border border-emerald-50 hover:bg-emerald-600 hover:text-white transition-all duration-300 z-50 group-hover:scale-110"
+        className="absolute -right-3 top-10 bg-emerald-700 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-md hover:bg-emerald-800 transition-all duration-300 z-50 border-2 border-white"
       >
-        <span className={`transition-transform duration-500 ${isMinimal ? 'rotate-180' : 'rotate-0'}`}>
-          {isMinimal ? '➔' : '⬅'}
+        <span className={`text-[10px] transition-transform duration-500 ${isMinimal ? 'rotate-180' : 'rotate-0'}`}>
+          ◀
         </span>
       </button>
 
       <div className="p-6 flex flex-col h-full overflow-hidden">
         {/* Label Navigasi */}
-        <p className={`text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-8 transition-all duration-300 ${
-          isMinimal ? 'text-center' : 'px-4'
+        <p className={`text-[10px] font-black text-slate-300 uppercase tracking-widest mb-8 transition-opacity duration-300 ${
+          isMinimal ? 'opacity-0' : 'opacity-100'
         }`}>
-          {isMinimal ? '•••' : 'NAVIGASI'}
+          {!isMinimal && "NAVIGASI"}
         </p>
 
         {/* List Menu */}
@@ -40,18 +40,15 @@ export default function Sidebar({ aktif, setAktif }) {
             <button
               key={m.id}
               onClick={() => setAktif(m.id)}
-              title={m.label}
-              className={`w-full flex items-center gap-4 p-4 rounded-[1.25rem] font-bold transition-all duration-300 group/item ${
+              className={`w-full flex items-center gap-4 p-4 rounded-2xl font-bold transition-all duration-200 ${
                 aktif === m.id 
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100 scale-[1.02]' 
-                : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 hover:translate-x-1'
-              } ${isMinimal ? 'justify-center' : ''}`}
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' 
+                : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'
+              } ${isMinimal ? 'justify-center px-0' : 'px-4'}`}
             >
-              <span className={`text-xl transition-transform duration-300 ${aktif === m.id ? 'scale-110' : ''}`}>
-                {m.icon}
-              </span>
+              <span className="text-xl">{m.icon}</span>
               {!isMinimal && (
-                <span className="text-sm whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-500">
+                <span className="text-sm whitespace-nowrap animate-in fade-in duration-500">
                   {m.label}
                 </span>
               )}
@@ -59,12 +56,10 @@ export default function Sidebar({ aktif, setAktif }) {
           ))}
         </nav>
 
-        {/* Bagian Contact Us - Hijau Emerald */}
-        <div className={`mt-auto transition-all duration-500 ${
-          isMinimal ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
-        }`}>
-          <div className="bg-emerald-50/50 p-4 rounded-3xl border border-emerald-100">
-            <p className="text-[9px] font-black text-emerald-800/40 uppercase tracking-tighter text-center mb-1">Hubungi Kami</p>
+        {/* Contact Us - Box Hijau Muda */}
+        <div className={`transition-all duration-500 ${isMinimal ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`}>
+          <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+            <p className="text-[9px] font-black text-emerald-800 uppercase text-center mb-1">Contact Us</p>
             <p className="text-[10px] font-bold text-emerald-900 text-center truncate">min7ponorogo@gmail.com</p>
           </div>
         </div>
