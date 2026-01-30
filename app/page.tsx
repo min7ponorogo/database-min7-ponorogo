@@ -165,6 +165,17 @@ export default function Dashboard() {
           <h3 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest border-l-4 border-emerald-500 pl-3">Data Siswa</h3>
           <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 grid grid-cols-1 gap-5">
             <DetailRow label="Nama Lengkap Siswa" val={viewDetailSiswa.NAMA} />
+            
+            {/* INI BARIS NIK YANG DITAMBAHKAN */}
+            <DetailRow 
+              label="NIK" 
+              val={
+                <span className={isAdmin ? "font-bold text-black" : "tracking-widest text-slate-300"}>
+                  {isAdmin ? viewDetailSiswa.NIK : "****************"}
+                </span>
+              } 
+            />
+
             <div className="grid grid-cols-2 gap-6">
               <DetailRow label="NISN" val={viewDetailSiswa.NISN} />
               <DetailRow label="NIS Lokal" val={viewDetailSiswa['NIS LOKAL']} />
