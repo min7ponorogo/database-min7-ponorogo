@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -10,56 +10,26 @@ const supabase = createClient(
 );
 
 export default function Dashboard() {
-  const [stats, setStats] = useState({ total: 0, aktif: 0, l: 0, p: 0 });
-  const [rombelList, setRombelList] = useState<string[]>([]);
+  const [allSiswa, setAllSiswa] = useState<any[]>([]);
+  const [allAktivitas, setAllAktivitas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [menuAktif, setMenuAktif] = useState('dashboard');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [viewDetailRombel, setViewDetailRombel] = useState<any>(null);
+  
+  const [filterSiswa, setFilterSiswa] = useState<string | null>(null);
+  const [filterRombel, setFilterRombel] = useState<string | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50); 
 
   useEffect(() => {
     async function ambilData() {
       try {
-        setLoading(true);
-        
-        // 1. Ambil data profil siswa
-        const { data: profil, error: err1 } = await supabase
-          .from('data_siswa') 
-          .select('*');
-
-        // 2. Ambil data aktivitas belajar
-        const { data: aktivitas, error: err2 } = await supabase
-          .from('aktivitas_belajar')
-          .select('*');
-
-        if (err1 || err2) {
-          setErrorMsg(err1?.message || err2?.message || "Gagal koneksi");
-          return;
-        }
-
-        if (profil) {
-          // Filter Jenis Kelamin (Cek huruf L/P atau angka 1/2 sesuai database)
-          const cowok = profil.filter(s => String(s['JENIS KELAMIN']).startsWith('L') || String(s['JENIS KELAMIN']) === '1').length;
-          const cewek = profil.filter(s => String(s['JENIS KELAMIN']).startsWith('P') || String(s['JENIS KELAMIN']) === '2').length;
-          
-          setStats(prev => ({
-            ...prev,
-            total: profil.length,
-            l: cowok,
-            p: cewek
-          }));
-        }
-
-        if (aktivitas) {
-          // Hitung siswa aktif
-          const aktif = aktivitas.filter(a => String(a['STATUS BELAJAR']).toLowerCase() === 'aktif').length;
-          setStats(prev => ({ ...prev, aktif: aktif }));
-
-          // Ambil daftar ROMBEL unik (Menghilangkan duplikat)
-          const daftarRombel = Array.from(new Set(aktivitas.map(a => a.ROMBEL).filter(Boolean)));
-          setRombelList(daftarRombel as string[]);
-        }
-
-      } catch (err: any) {
-        setErrorMsg(err.message);
+        const { data: profil } = await supabase.from('data_siswa').select('*');
+        const { data: aktivitas } = await supabase.from('aktivitas_belajar').select('*');
+        if (profil) setAllSiswa(profil);
+        if (aktivitas) setAllAktivitas(aktivitas);
       } finally {
         setLoading(false);
       }
@@ -67,78 +37,322 @@ export default function Dashboard() {
     ambilData();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterSiswa, itemsPerPage]);
+
+  const stats = useMemo(() => {
+    const cowok = allSiswa.filter(s => s['JENIS KELAMIN'] === 'L').length;
+    const aktif = allAktivitas.filter(a => a['STATUS BELAJAR'] === 'Aktif').length;
+    return {
+      total: allSiswa.length,
+      siswaAktif: aktif,
+      l: cowok,
+      p: allSiswa.length - cowok
+    };
+  }, [allSiswa, allAktivitas]);
+
+  const rombelList = useMemo(() => {
+    const rombelMap = new Map();
+    allAktivitas.forEach(a => {
+      if (a.ROMBEL && a.ROMBEL !== "null") {
+        if (!rombelMap.has(a.ROMBEL)) {
+          rombelMap.set(a.ROMBEL, { nama: a.ROMBEL, kelas: a.KELAS, total: 0, l: 0, p: 0 });
+        }
+        const r = rombelMap.get(a.ROMBEL);
+        r.total++;
+        const s = allSiswa.find(x => x.ID === a.ID);
+        if (s?.['JENIS KELAMIN'] === 'L') r.l++;
+        else if (s?.['JENIS KELAMIN'] === 'P') r.p++;
+      }
+    });
+    return Array.from(rombelMap.values()).sort((a, b) => a.kelas - b.kelas);
+  }, [allSiswa, allAktivitas]);
+
+  const filteredSiswa = useMemo(() => {
+    return allSiswa.filter(s => {
+      const matchSearch = s.NAMA?.toLowerCase().includes(searchTerm.toLowerCase());
+      let matchFilter = true;
+      if (filterSiswa === 'L' || filterSiswa === 'P') {
+        matchFilter = s['JENIS KELAMIN'] === filterSiswa;
+      } else if (filterSiswa === 'Aktif') {
+        const aktivitas = allAktivitas.find(a => a.ID === s.ID);
+        matchFilter = aktivitas?.['STATUS BELAJAR'] === 'Aktif';
+      }
+      return matchSearch && matchFilter;
+    });
+  }, [allSiswa, allAktivitas, searchTerm, filterSiswa]);
+
+  const paginatedSiswa = useMemo(() => {
+    if (itemsPerPage === -1) return filteredSiswa;
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredSiswa.slice(start, start + itemsPerPage);
+  }, [filteredSiswa, currentPage, itemsPerPage]);
+
+  const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(filteredSiswa.length / itemsPerPage);
+
+  if (loading) return <div className="h-screen flex items-center justify-center font-black text-[#065f46]">MEMUAT...</div>;
+
   return (
-    <div className="flex flex-col h-screen bg-slate-50 text-slate-900">
-      <Header search="" setSearch={() => {}} />
+    <div className="flex flex-col h-screen bg-[#f8fafc] text-slate-900 overflow-hidden">
+      <Header search={searchTerm} setSearch={setSearchTerm} />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar aktif="dashboard" setAktif={() => {}} />
+        <Sidebar aktif={menuAktif} setAktif={(m: string) => { setMenuAktif(m); setViewDetailRombel(null); setFilterSiswa(null); setFilterRombel(null); setCurrentPage(1); }} />
+        
         <main className="flex-1 p-8 overflow-y-auto">
           
-          {errorMsg && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-              <strong>Error Database:</strong> {errorMsg} 
+          {/* ===[ KELOMPOK 1: DASHBOARD ]=== */}
+          <div className={menuAktif === 'dashboard' ? 'block' : 'hidden'}>
+            <div className="bg-[#065f46] text-white p-12 rounded-[3rem] shadow-xl relative overflow-hidden mb-8">
+              <h2 className="text-6xl font-black italic uppercase relative z-10">MIN 7 Ponorogo</h2>
+              <p className="opacity-60 text-xs font-bold tracking-[0.5em] relative z-10 uppercase">Sistem Informasi Data Siswa</p>
+              <span className="absolute right-[-20px] top-[-20px] text-[15rem] opacity-10 select-none">🏫</span>
+            </div>
+
+            {searchTerm && (
+              <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+                <h3 className="text-xl font-black italic uppercase text-emerald-700 mb-4 pl-2">Hasil Pencarian Cepat: "{searchTerm}"</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {allSiswa.filter(s => s.NAMA?.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 6).map((s, idx) => (
+                    <div key={idx} className="bg-white p-4 rounded-2xl shadow-sm border border-emerald-100 flex justify-between items-center group hover:bg-emerald-50 transition-all">
+                      <div>
+                        <p className="text-xs font-black text-slate-700 uppercase group-hover:text-emerald-700">{s.NAMA}</p>
+                        <p className="text-[9px] font-bold text-slate-400">ID: {s.ID}</p>
+                      </div>
+                      <span className={`text-[8px] font-black px-2 py-1 rounded-full ${s['JENIS KELAMIN'] === 'L' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600'}`}>
+                        {s['JENIS KELAMIN']}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+               <StatCard title="Total Siswa" val={stats.total} icon="📚" col="text-emerald-600" onClick={() => { setMenuAktif('siswa'); setFilterSiswa(null); }} />
+               <StatCard title="Siswa Aktif" val={stats.siswaAktif} icon="✅" col="text-blue-500" onClick={() => { setMenuAktif('siswa'); setFilterSiswa('Aktif'); }} />
+               <StatCard title="Laki-Laki" val={stats.l} icon="👦" col="text-indigo-600" onClick={() => { setMenuAktif('siswa'); setFilterSiswa('L'); }} />
+               <StatCard title="Perempuan" val={stats.p} icon="👧" col="text-pink-600" onClick={() => { setMenuAktif('siswa'); setFilterSiswa('P'); }} />
+            </div>
+
+            <h3 className="text-2xl font-black italic uppercase text-slate-800 mb-6 border-l-8 border-[#065f46] pl-6">Statistik Rombel</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {rombelList.map((r, i) => (
+                <div key={i} onClick={() => { setMenuAktif('rombel'); setViewDetailRombel(r); setFilterRombel(null); }} 
+                     className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden">
+                  <div className="relative z-10">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Kelas {r.kelas}</p>
+                    <h4 className="text-3xl font-black text-slate-800 uppercase group-hover:text-[#065f46] mb-6">{r.nama}</h4>
+                    <div className="flex justify-between items-end">
+                        <div className="text-[10px] font-black uppercase space-y-1">
+                          <p className="text-blue-500">👦 {r.l} Laki-laki</p>
+                          <p className="text-pink-500">👧 {r.p} Perempuan</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-4xl font-black text-slate-200 group-hover:text-emerald-100 transition-colors">{r.total}</p>
+                          <p className="text-[8px] font-black text-slate-400 uppercase">Total Siswa</p>
+                        </div>
+                    </div>
+                  </div>
+                  <span className="absolute right-[-15px] bottom-[-15px] text-9xl opacity-5 group-hover:opacity-10 group-hover:rotate-12 transition-all select-none">🏫</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ===[ KELOMPOK 2: DATA SISWA ]=== */}
+          <div className={menuAktif === 'siswa' ? 'block' : 'hidden'}>
+            <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
+              <h3 className="text-4xl font-black italic uppercase text-slate-800 mb-6 border-l-8 border-[#065f46] pl-6">
+                Data Induk Siswa
+              </h3>
+              
+              {/* CHIP FILTER DISAMAKAN */}
+              <div className="flex flex-wrap gap-3 mb-10 pl-6">
+                <button onClick={() => setFilterSiswa(null)} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${!filterSiswa ? 'bg-emerald-50 border-emerald-500 text-emerald-600 ring-4 ring-emerald-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-emerald-200'}`}>
+                  TOTAL: {stats.total}
+                </button>
+                <button onClick={() => setFilterSiswa('Aktif')} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterSiswa === 'Aktif' ? 'bg-blue-50 border-blue-500 text-blue-600 ring-4 ring-blue-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-blue-200'}`}>
+                  AKTIF: {stats.siswaAktif}
+                </button>
+                <button onClick={() => setFilterSiswa('L')} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterSiswa === 'L' ? 'bg-indigo-50 border-indigo-500 text-indigo-600 ring-4 ring-indigo-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-200'}`}>
+                  👦 L: {stats.l}
+                </button>
+                <button onClick={() => setFilterSiswa('P')} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterSiswa === 'P' ? 'bg-pink-50 border-pink-500 text-pink-600 ring-4 ring-pink-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-pink-200'}`}>
+                  👧 P: {stats.p}
+                </button>
+              </div>
+
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="text-slate-400 text-[11px] font-black uppercase tracking-widest border-b-2 border-slate-50">
+                    <th className="py-4 px-4">NO</th>
+                    <th className="py-4">NAMA LENGKAP</th>
+                    <th className="py-4 text-center">L/P</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {paginatedSiswa.map((s, i) => (
+                    <tr key={i} className="hover:bg-slate-50 group">
+                      <td className="py-4 px-4 text-xs font-black text-slate-300">
+                        {itemsPerPage === -1 ? i + 1 : ((currentPage - 1) * itemsPerPage) + i + 1}
+                      </td>
+                      <td className="py-4 text-sm font-black text-slate-700 uppercase group-hover:text-[#065f46]">{s.NAMA}</td>
+                      <td className="py-4 text-center">
+                        <span className={`text-[10px] font-black px-3 py-1 rounded-full ${s['JENIS KELAMIN'] === 'L' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'}`}>
+                          {s['JENIS KELAMIN'] === 'L' ? '👦 L' : '👧 P'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="flex flex-col md:flex-row items-center justify-between mt-10 px-4 gap-4">
+                <div className="flex items-center gap-4">
+                  <p className="text-[10px] font-black text-slate-400 uppercase">
+                    Menampilkan {paginatedSiswa.length} dari {filteredSiswa.length} Siswa
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <label className="text-[9px] font-black text-slate-400 uppercase">Tampilkan:</label>
+                    <select 
+                      value={itemsPerPage} 
+                      onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                      className="bg-slate-100 text-[10px] font-black uppercase px-2 py-1 rounded-lg border-none focus:ring-2 focus:ring-[#065f46] cursor-pointer"
+                    >
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                      <option value={-1}>Semua</option>
+                    </select>
+                  </div>
+                </div>
+
+                {itemsPerPage !== -1 && (
+                  <div className="flex gap-2">
+                    <button 
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(prev => prev - 1)}
+                      className="px-4 py-2 text-[10px] font-black bg-slate-100 rounded-xl hover:bg-[#065f46] hover:text-white disabled:opacity-30 transition-all uppercase"
+                    >Prev</button>
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button 
+                        key={i}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={`w-8 h-8 text-[10px] font-black rounded-xl transition-all ${currentPage === i + 1 ? 'bg-[#065f46] text-white' : 'bg-slate-50 text-slate-400'}`}
+                      >{i + 1}</button>
+                    ))}
+                    <button 
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(prev => prev + 1)}
+                      className="px-4 py-2 text-[10px] font-black bg-slate-100 rounded-xl hover:bg-[#065f46] hover:text-white disabled:opacity-30 transition-all uppercase"
+                    >Next</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ===[ KELOMPOK 3: ROMBEL ]=== */}
+          <div className={menuAktif === 'rombel' && !viewDetailRombel ? 'block' : 'hidden'}>
+            <h3 className="text-4xl font-black italic uppercase text-slate-800 mb-8 border-l-8 border-[#065f46] pl-6">Daftar Rombel</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {rombelList.map((r, i) => (
+                <div key={i} onClick={() => { setViewDetailRombel(r); setFilterRombel(null); }} 
+                     className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden">
+                  <div className="relative z-10">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Kelas {r.kelas}</p>
+                    <h4 className="text-3xl font-black text-slate-800 uppercase group-hover:text-[#065f46] mb-6">{r.nama}</h4>
+                    <div className="flex justify-between items-end">
+                        <div className="text-[10px] font-black uppercase space-y-1">
+                          <p className="text-blue-500">👦 {r.l} Laki-laki</p>
+                          <p className="text-pink-500">👧 {r.p} Perempuan</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-4xl font-black text-slate-200 group-hover:text-emerald-100 transition-colors">{r.total}</p>
+                          <p className="text-[8px] font-black text-slate-400 uppercase">Total Siswa</p>
+                        </div>
+                    </div>
+                  </div>
+                  <span className="absolute right-[-15px] bottom-[-15px] text-9xl opacity-5 group-hover:opacity-10 group-hover:rotate-12 transition-all select-none">🏫</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {menuAktif === 'rombel' && viewDetailRombel && (
+            <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
+                <button onClick={() => { setViewDetailRombel(null); setFilterRombel(null); }} className="mb-6 text-[#065f46] font-black text-xs uppercase hover:underline">← Kembali ke Daftar</button>
+                <div className="flex justify-between items-end mb-6">
+                  <div>
+                    <h3 className="text-7xl font-black italic uppercase text-slate-800 leading-tight">{viewDetailRombel.nama}</h3>
+                    <p className="text-2xl font-black italic text-[#065f46]">KELAS {viewDetailRombel.kelas}</p>
+                  </div>
+                </div>
+
+                {/* CHIP FILTER DISAMAKAN DENGAN DATA SISWA */}
+                <div className="flex flex-wrap gap-3 mb-10">
+                  <button onClick={() => setFilterRombel(null)} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${!filterRombel ? 'bg-emerald-50 border-emerald-500 text-emerald-600 ring-4 ring-emerald-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-emerald-200'}`}>
+                    TOTAL: {viewDetailRombel.total} SISWA
+                  </button>
+                  <button onClick={() => setFilterRombel('L')} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'L' ? 'bg-blue-50 border-blue-500 text-blue-600 ring-4 ring-blue-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-blue-200'}`}>
+                    👦 {viewDetailRombel.l} LAKI-LAKI
+                  </button>
+                  <button onClick={() => setFilterRombel('P')} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'P' ? 'bg-pink-50 border-pink-500 text-pink-600 ring-4 ring-pink-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-pink-200'}`}>
+                    👧 {viewDetailRombel.p} PEREMPUAN
+                  </button>
+                </div>
+
+                <div className="bg-emerald-50/30 p-8 rounded-[2.5rem] border border-emerald-100">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-[#065f46] text-[11px] font-black uppercase tracking-widest opacity-60">
+                        <th className="pb-6 px-4">NO</th>
+                        <th className="pb-6">NAMA LENGKAP</th>
+                        <th className="pb-6 text-right">GENDER</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allAktivitas
+                        .filter(a => a.ROMBEL === viewDetailRombel.nama)
+                        .filter(item => {
+                          const s = allSiswa.find(x => x.ID === item.ID);
+                          const matchGender = filterRombel ? s?.['JENIS KELAMIN'] === filterRombel : true;
+                          const matchSearch = s?.NAMA?.toLowerCase().includes(searchTerm.toLowerCase());
+                          return matchGender && matchSearch;
+                        })
+                        .map((item, idx) => {
+                          const s = allSiswa.find(x => x.ID === item.ID);
+                          return (
+                            <tr key={idx} className="border-b border-white/50 group hover:bg-white/40 transition-colors">
+                              <td className="py-4 px-4 text-sm font-black text-emerald-600/40">{idx + 1}</td>
+                              <td className="py-4 text-md font-black text-slate-700 uppercase group-hover:text-emerald-700">{s?.NAMA}</td>
+                              <td className="py-4 text-right">
+                                <span className={`text-[10px] font-black px-4 py-1.5 rounded-full shadow-sm border ${s?.['JENIS KELAMIN'] === 'L' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-pink-50 text-pink-600 border-pink-100'}`}>
+                                  {s?.['JENIS KELAMIN'] === 'L' ? 'LAKI-LAKI' : 'PEREMPUAN'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
             </div>
           )}
-
-          <div className="bg-[#065f46] text-white p-10 rounded-[2.5rem] mb-10 shadow-xl relative overflow-hidden">
-             <h2 className="text-5xl font-black mb-3 italic">Ahlan wa Sahlan! 👋</h2>
-             <p className="opacity-90 font-medium">MIN 7 Ponorogo - Sistem Informasi Digital</p>
-          </div>
-
-          {/* Statistik Utama */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-            <StatCard title="Total Siswa" val={stats.total} load={loading} col="text-emerald-600" />
-            <StatCard title="Siswa Aktif" val={stats.aktif} load={loading} col="text-emerald-500" />
-            
-            {/* Kartu dengan Gambar Laki-Laki */}
-            <StatCard title="Laki-Laki" val={stats.l} load={loading} col="text-blue-600" img="👦" />
-            
-            {/* Kartu dengan Gambar Perempuan */}
-            <StatCard title="Perempuan" val={stats.p} load={loading} col="text-pink-600" img="👧" />
-          </div>
-
-          {/* Daftar Rombel dari tabel aktivitas_belajar */}
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <span className="bg-emerald-100 p-2 rounded-lg">🏫</span> Daftar Rombel Tersedia
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {loading ? (
-                <p className="text-slate-400 italic">Memuat rombel...</p>
-              ) : rombelList.length > 0 ? (
-                rombelList.sort().map((rombel, index) => (
-                  <div key={index} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center hover:bg-emerald-50 hover:border-emerald-200 transition-all cursor-default">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Rombel</p>
-                    <p className="font-black text-slate-700">{rombel}</p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-slate-400 italic">Data rombel tidak ditemukan.</p>
-              )}
-            </div>
-          </div>
-
         </main>
       </div>
     </div>
   );
 }
 
-// Komponen StatCard yang sudah mendukung Gambar/Emoji
-function StatCard({ title, val, load, col, img }: any) {
+function StatCard({ title, val, icon, col, onClick }: any) {
   return (
-    <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:shadow-md relative overflow-hidden group">
+    <div onClick={onClick} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group cursor-pointer hover:shadow-lg transition-all active:scale-95">
       <div className="relative z-10">
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{title}</p>
-        <p className={`text-6xl font-black ${col}`}>{load ? "..." : val}</p>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{title}</p>
+        <p className={`text-6xl font-black ${col} tracking-tighter`}>{val}</p>
       </div>
-      
-      {/* Gambar/Emoji di pojok kartu */}
-      {img && (
-        <div className="absolute -right-2 -bottom-2 text-7xl opacity-20 group-hover:opacity-40 transition-opacity grayscale group-hover:grayscale-0">
-          {img}
-        </div>
-      )}
+      <span className="absolute right-[-10px] bottom-[-10px] text-8xl opacity-5 group-hover:opacity-10 transition-all select-none">{icon}</span>
     </div>
   );
 }
