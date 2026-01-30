@@ -1,11 +1,29 @@
 "use client";
+// --- TAMBAHAN: Import State & Supabase ---
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase"; 
 
 export default function DataTable({ data }) {
+  // --- TAMBAHAN: Logika Cek Admin ---
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const isAdmin = user?.email === 'min7ponorogo141197@gmail.com';
+  // ------------------------------------
+
   if (!data || data.length === 0) return (
     <div className="p-20 text-center text-slate-400 font-medium">Data tidak ditemukan.</div>
   );
 
-  // Ambil maksimal 6 kolom pertama agar tidak sesak di layar
   const headers = Object.keys(data[0]).filter(k => k.toLowerCase() !== 'id').slice(0, 6);
 
   return (
@@ -25,11 +43,15 @@ export default function DataTable({ data }) {
             <tr key={i} className="hover:bg-emerald-50/30 transition-colors">
               {headers.map(h => (
                 <td key={h} className="p-4 text-sm text-slate-600 font-medium">
-                  {String(row[h]).toLowerCase() === 'aktif' ? (
+                  {/* --- BAGIAN YANG DIUBAH: Logika Sensor NIK & Status Aktif --- */}
+                  {h.toUpperCase() === 'NIK' && !isAdmin ? (
+                    <span className="tracking-tighter text-slate-300">**********</span>
+                  ) : String(row[h]).toLowerCase() === 'aktif' ? (
                     <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg text-[10px] font-black uppercase">Aktif</span>
                   ) : (
                     row[h] || "-"
                   )}
+                  {/* -------------------------------------------------------- */}
                 </td>
               ))}
             </tr>
