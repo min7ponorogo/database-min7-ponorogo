@@ -26,6 +26,27 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(50); 
 
+  // --- TAMBAHAN LOGIKA AUTH UNTUK ISADMIN ---
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    // Cek session saat awal
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Pantau perubahan login/logout
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Variabel isAdmin agar error hilang
+  const isAdmin = user?.email === 'min7ponorogo141197@gmail.com';
+  // ------------------------------------------
+  
   useEffect(() => {
     async function ambilData() {
       try {
