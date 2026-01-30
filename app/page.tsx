@@ -541,6 +541,10 @@ export default function Dashboard() {
                           <span class="label">Nama Lengkap Siswa</span>
                           <span class="value">${s.NAMA}</span>
                         </div>
+                        <div class="detail-item col-span-2">
+                          <span class="label">NIK (Nomor Induk Kependudukan)</span>
+                          <span class="value">${s.NIK || '-'}</span>
+                        </div>
                         <div class="detail-item">
                           <span class="label">NISN</span>
                           <span class="value">${s.NISN}</span>
