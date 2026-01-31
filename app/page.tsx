@@ -190,11 +190,7 @@ export default function Dashboard() {
             {/* INI BARIS NIK YANG DITAMBAHKAN */}
             <DetailRow 
               label="NIK" 
-              val={
-                <span className={isAdmin ? "font-bold text-black" : "tracking-widest text-slate-300"}>
-                  {isAdmin ? viewDetailSiswa.NIK : "****************"}
-                </span>
-              } 
+              val={isAdmin ? (viewDetailSiswa.NIK || "-") : "****************"} 
             />
 
             <div className="grid grid-cols-2 gap-6">
