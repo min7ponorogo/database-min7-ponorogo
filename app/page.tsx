@@ -246,7 +246,7 @@ export default function Dashboard() {
           onClick={() => window.print()} 
           className="flex-1 bg-[#065f46] text-white py-4 rounded-2xl font-black uppercase text-xs shadow-lg shadow-emerald-900/20 hover:bg-[#044d38] transition-all flex items-center justify-center gap-3"
         >
-          <span>🖨️ Cetak ke A4</span>
+          <span>🖨️ Cetak</span>
         </button>
       </div>
     </div>
