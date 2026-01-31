@@ -229,13 +229,13 @@ export default function Dashboard() {
             <DetailRow 
               label="Nomor Telepon Orang Tua" 
               val={
-                <span className="text-black font-bold">
-                  {allOrtu.find(o => o.ID === viewDetailSiswa.ID)?.['NO. TELEPON AYAH'] || 
-                   allOrtu.find(o => o.ID === viewDetailSiswa.ID)?.['NO. TELEPON IBU'] || 
-                   allOrtu.find(o => o.ID === viewDetailSiswa.ID)?.['NO. TELEPON WALI'] || "-"}
-                </span>
-              } 
-            />
+               isAdmin 
+                 ? (allOrtu.find(o => o.ID === viewDetailSiswa.ID)?.['NO. TELEPON AYAH'] || 
+                    allOrtu.find(o => o.ID === viewDetailSiswa.ID)?.['NO. TELEPON IBU'] || 
+                    allOrtu.find(o => o.ID === viewDetailSiswa.ID)?.['NO. TELEPON WALI'] || "-")
+                 : "****************"
+             } 
+           />
           </div>
         </div>
       </div>
