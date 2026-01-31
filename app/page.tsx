@@ -538,7 +538,7 @@ export default function Dashboard() {
                           <span class="value">${s.NAMA}</span>
                         </div>
                         <div class="detail-item col-span-2">
-                          <span class="label">NIK (Nomor Induk Kependudukan)</span>
+                          <span class="label">NIK</span>
                           <span class="value">
                             ${isAdmin ? (s.NIK || '-') : '****************'}
                           </span>
