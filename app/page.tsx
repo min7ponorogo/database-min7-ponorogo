@@ -453,7 +453,6 @@ export default function Dashboard() {
                 return s?.['JENIS KELAMIN'] === 'P';
               }).length
             };
-
   return (
   <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
     <button onClick={() => { setViewDetailRombel(null); setFilterRombel(null); }} className="mb-6 text-[#065f46] font-black text-xs uppercase hover:underline">← Kembali ke Daftar</button>
