@@ -440,49 +440,63 @@ export default function Dashboard() {
           </div>
 
           {menuAktif === 'rombel' && viewDetailRombel && (() => {
-            // 1. HITUNG STATISTIK KHUSUS ROMBEL INI
-            const siswaDiRombelIni = allAktivitas.filter(a => a.ROMBEL === viewDetailRombel.nama);
-  
-            const statsRombel = {
-              l: siswaDiRombelIni.filter(a => {
-                const s = allSiswa.find(x => x.ID === a.ID);
-                return s?.['JENIS KELAMIN'] === 'L';
-              }).length,
-              p: siswaDiRombelIni.filter(a => {
-                const s = allSiswa.find(x => x.ID === a.ID);
-                return s?.['JENIS KELAMIN'] === 'P';
-              }).length
-            };
-  return (
-              <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
-                <button 
-                  onClick={() => { setViewDetailRombel(null); setFilterRombel(null); }} 
-                  className="mb-6 text-[#065f46] font-black text-xs uppercase hover:underline"
-                >
-                  ← Kembali ke Daftar
-                </button>
-                
-                <div className="flex justify-between items-end mb-6">
-                  <div>
+    // 1. HITUNG STATISTIK (Sudah benar)
+    const siswaDiRombelIni = allAktivitas.filter(a => a.ROMBEL === viewDetailRombel.nama);
+
+    const statsRombel = {
+        l: siswaDiRombelIni.filter(a => allSiswa.find(x => x.ID === a.ID)?.['JENIS KELAMIN'] === 'L').length,
+        p: siswaDiRombelIni.filter(a => allSiswa.find(x => x.ID === a.ID)?.['JENIS KELAMIN'] === 'P').length
+    };
+
+    return (
+        <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
+            {/* Tombol Kembali */}
+            <button 
+                onClick={() => { setViewDetailRombel(null); setFilterRombel(null); }} 
+                className="mb-6 text-[#065f46] font-black text-xs uppercase hover:underline"
+            >
+                ← Kembali ke Daftar
+            </button>
+
+            <div className="flex justify-between items-end mb-10">
+                <div>
                     <h3 className="text-7xl font-black italic uppercase text-slate-800 leading-tight">{viewDetailRombel.nama}</h3>
                     <p className="text-2xl font-black italic text-[#065f46]">KELAS {viewDetailRombel.kelas}</p>
-                  </div>
-                  
-                  {/* Statistik Ringkas */}
-                  <div className="text-right">
-                    <p className="text-[10px] font-black uppercase text-slate-400">Total Siswa</p>
-                    <p className="text-3xl font-black text-slate-800">
-                      <span className="text-blue-500">{statsRombel.l}L</span>
-                      <span className="mx-2 text-slate-200">/</span>
-                      <span className="text-pink-500">{statsRombel.p}P</span>
-                    </p>
-                  </div>
                 </div>
+                
+                <div className="text-right">
+                    <p className="text-[10px] font-black uppercase text-slate-400">Ringkasan</p>
+                    <p className="text-3xl font-black text-slate-800">
+                        <span className="text-blue-500">{statsRombel.l}L</span>
+                        <span className="mx-2 text-slate-200">/</span>
+                        <span className="text-pink-500">{statsRombel.p}P</span>
+                    </p>
+                </div>
+            </div>
 
-                {/* Anda bisa menambah tabel siswa di sini nanti */}
-              </div>
-            );
-          })()}
+            {/* --- FIX: TARUH TOMBOL FILTER DI SINI (DI DALAM RETURN) --- */}
+            <div className="flex flex-wrap gap-3 mb-10">
+                <button 
+                    onClick={() => setFilterRombel(null)} 
+                    className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${!filterRombel ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-white border-slate-100 text-slate-400'}`}
+                >
+                    SEMUA: {siswaDiRombelIni.length}
+                </button>
+
+                <button 
+                    onClick={() => setFilterRombel('L')} 
+                    className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'L' ? 'bg-indigo-50 border-indigo-500 text-indigo-600' : 'bg-white border-slate-100 text-slate-400'}`}
+                >
+                    👦 LAKI-LAKI: {statsRombel.l}
+                </button>
+
+                <button 
+                    onClick={() => setFilterRombel('P')} 
+                    className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'P' ? 'bg-pink-50 border-pink-500 text-pink-600' : 'bg-white border-slate-100 text-slate-400'}`}
+                >
+                    👧 PEREMPUAN: {statsRombel.p}
+                </button>
+            </div>
 
       {/* --- TOMBOL CETAK MASSAL BIODATA (DATA SISWA & DATA ORTU HIJAU) --- */}
       <button 
