@@ -454,14 +454,35 @@ export default function Dashboard() {
               }).length
             };
   return (
-  <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
-    <button onClick={() => { setViewDetailRombel(null); setFilterRombel(null); }} className="mb-6 text-[#065f46] font-black text-xs uppercase hover:underline">← Kembali ke Daftar</button>
-    
-    <div className="flex justify-between items-end mb-6">
-      <div>
-        <h3 className="text-7xl font-black italic uppercase text-slate-800 leading-tight">{viewDetailRombel.nama}</h3>
-        <p className="text-2xl font-black italic text-[#065f46]">KELAS {viewDetailRombel.kelas}</p>
-      </div>
+              <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
+                <button 
+                  onClick={() => { setViewDetailRombel(null); setFilterRombel(null); }} 
+                  className="mb-6 text-[#065f46] font-black text-xs uppercase hover:underline"
+                >
+                  ← Kembali ke Daftar
+                </button>
+                
+                <div className="flex justify-between items-end mb-6">
+                  <div>
+                    <h3 className="text-7xl font-black italic uppercase text-slate-800 leading-tight">{viewDetailRombel.nama}</h3>
+                    <p className="text-2xl font-black italic text-[#065f46]">KELAS {viewDetailRombel.kelas}</p>
+                  </div>
+                  
+                  {/* Statistik Ringkas */}
+                  <div className="text-right">
+                    <p className="text-[10px] font-black uppercase text-slate-400">Total Siswa</p>
+                    <p className="text-3xl font-black text-slate-800">
+                      <span className="text-blue-500">{statsRombel.l}L</span>
+                      <span className="mx-2 text-slate-200">/</span>
+                      <span className="text-pink-500">{statsRombel.p}P</span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Anda bisa menambah tabel siswa di sini nanti */}
+              </div>
+            );
+          })()}
 
       {/* --- TOMBOL CETAK MASSAL BIODATA (DATA SISWA & DATA ORTU HIJAU) --- */}
       <button 
