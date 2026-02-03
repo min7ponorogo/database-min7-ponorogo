@@ -440,318 +440,120 @@ export default function Dashboard() {
           </div>
 
           {menuAktif === 'rombel' && viewDetailRombel && (() => {
-  // 1. Logika perhitungan (Tetap di sini)
+  // 1. Logika perhitungan Data
   const siswaDiRombelIni = allAktivitas.filter(a => a.ROMBEL === viewDetailRombel.nama);
   const statsRombel = {
+    total: siswaDiRombelIni.length,
     l: siswaDiRombelIni.filter(a => allSiswa.find(x => x.ID === a.ID)?.['JENIS KELAMIN'] === 'L').length,
     p: siswaDiRombelIni.filter(a => allSiswa.find(x => x.ID === a.ID)?.['JENIS KELAMIN'] === 'P').length
   };
 
   return (
     <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
-      {/* Header Rombel */}
-      <button onClick={() => { setViewDetailRombel(null); setFilterRombel(null); }} className="mb-6 text-[#065f46] font-black text-xs uppercase hover:underline">
-        ← Kembali
+      {/* Tombol Kembali */}
+      <button onClick={() => { setViewDetailRombel(null); setFilterRombel(null); }} className="mb-6 text-[#065f46] font-black text-xs uppercase hover:underline flex items-center gap-2">
+        <span>←</span> KEMBALI KE DAFTAR
       </button>
 
+      {/* Header Nama Rombel */}
       <div className="flex justify-between items-end mb-10">
         <div>
-          <h3 className="text-7xl font-black italic uppercase text-slate-800">{viewDetailRombel.nama}</h3>
-          <p className="text-2xl font-black italic text-[#065f46]">KELAS {viewDetailRombel.kelas}</p>
+          <h3 className="text-7xl font-black italic uppercase text-slate-800 tracking-tighter">{viewDetailRombel.nama}</h3>
+          <p className="text-2xl font-black italic text-[#065f46] opacity-80">KELAS {viewDetailRombel.kelas}</p>
         </div>
+        
+        {/* Tombol Cetak */}
+        <button 
+          onClick={() => {
+            const printWindow = window.open('', '_blank');
+            const listSiswa = allSiswa.filter(s => {
+              const aktiv = allAktivitas.find(a => a.ID === s.ID);
+              return aktiv?.ROMBEL === viewDetailRombel.nama;
+            });
+
+            printWindow.document.write(`
+              <html>
+                <head><title>CETAK BIODATA - ${viewDetailRombel.nama}</title></head>
+                <body></body>
+              </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+          }}
+          className="bg-[#065f46] text-white px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-lg hover:bg-[#044d38] transition-all flex items-center gap-3"
+        >
+          🖨️ CETAK BIODATA KELAS
+        </button>
       </div>
 
-      {/* --- PINDAHKAN KE SINI (DI DALAM RETURN) --- */}
+      {/* --- TOMBOL FILTER GAYA BARU --- */}
       <div className="flex flex-wrap gap-3 mb-10">
         <button 
           onClick={() => setFilterRombel(null)} 
-          className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${!filterRombel ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-white border-slate-100 text-slate-400'}`}
+          className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${!filterRombel ? 'bg-emerald-50 border-emerald-500 text-emerald-600 ring-4 ring-emerald-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-emerald-200'}`}
         >
-          TOTAL: {siswaDiRombelIni.length} SISWA
+          TOTAL: {statsRombel.total} SISWA
         </button>
-
+        
         <button 
           onClick={() => setFilterRombel('L')} 
-          className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'L' ? 'bg-indigo-50 border-indigo-500 text-indigo-600' : 'bg-white border-slate-100 text-slate-400'}`}
+          className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'L' ? 'bg-indigo-50 border-indigo-500 text-indigo-600 ring-4 ring-indigo-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-200'}`}
         >
           👦 LAKI-LAKI: {statsRombel.l}
         </button>
-
+        
         <button 
           onClick={() => setFilterRombel('P')} 
-          className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'P' ? 'bg-pink-50 border-pink-500 text-pink-600' : 'bg-white border-slate-100 text-slate-400'}`}
+          className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'P' ? 'bg-pink-50 border-pink-500 text-pink-600 ring-4 ring-pink-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-pink-200'}`}
         >
           👧 PEREMPUAN: {statsRombel.p}
         </button>
       </div>
-      
-      {/* Tabel atau konten lainnya */}
-    </div>
-  ); // <--- Penutup Return
-})()} // <--- Penutup IIFE
-      {/* --- TOMBOL CETAK MASSAL BIODATA (DATA SISWA & DATA ORTU HIJAU) --- */}
-      <button 
-        onClick={() => {
-          const printWindow = window.open('', '_blank');
-          const listSiswa = allSiswa.filter(s => {
-            const aktiv = allAktivitas.find(a => a.ID === s.ID);
-            return aktiv?.ROMBEL === viewDetailRombel.nama;
-          });
 
-          printWindow.document.write(`
-            <html>
-              <head>
-                <title>CETAK BIODATA - ${viewDetailRombel.nama}</title>
-                <style>
-                  @page { size: A4; margin: 0; }
-                  body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: #fff; color: #1e293b; }
-                  
-                  .page-sheet { 
-                    page-break-after: always; 
-                    width: 210mm; 
-                    height: 297mm; 
-                    padding: 15mm 20mm; 
-                    box-sizing: border-box; 
-                    position: relative;
-                    overflow: hidden;
-                  }
-                  .page-sheet:last-child { page-break-after: auto; }
-
-                  .header-print { border-bottom: 4px solid #065f46; padding-bottom: 10px; margin-bottom: 25px; }
-                  .header-print h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; color: #065f46; margin: 0; }
-                  .header-print p { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px; margin: 4px 0 0 0; }
-
-                  .section-label { font-size: 10px; font-weight: 900; color: #059669; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; border-left: 4px solid #10b981; padding-left: 10px; }
-                  
-                  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 25px; margin-bottom: 10px; }
-                  .col-span-2 { grid-column: span 2; }
-                  
-                  .detail-item { margin-bottom: 2px; }
-                  .label { font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 2px; display: block; }
-                  .value { font-size: 12px; font-weight: 700; color: #000; text-transform: uppercase; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9; display: block; min-height: 18px; }
-
-                  /* --- PERBAIKAN JARAK DISINI --- */
-                  .footer-area { 
-                    margin-top: 40px; /* Jarak dari data terakhir */
-                    width: 100%; 
-                  }
-                  .footer-grid { display: grid; grid-template-columns: 35mm 1fr; gap: 40px; align-items: flex-end; }
-                  
-                  .photo-frame { 
-                    width: 30mm; 
-                    height: 40mm; 
-                    border: 1px dashed #cbd5e1; 
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: center; 
-                    text-align: center;
-                    font-size: 9px;
-                    font-weight: bold;
-                    color: #94a3b8;
-                    background: #f8fafc;
-                  }
-
-                  .sign-box { text-align: center; font-size: 12px; max-width: 250px; margin-left: auto; margin-right: 0; }
-                  .date-line { margin-bottom: 5px; display: block; }
-                  .line { margin-top: 60px; width: 100%; border-bottom: 1.5px solid #000; font-weight: bold; padding-bottom: 3px; }
-                </style>
-              </head>
-              <body>
-                ${listSiswa.map((s) => {
-                  const alamat = allAlamat.find(a => a.ID === s.ID)?.ALAMAT || '-';
-                  const ortu = allOrtu.find(o => o.ID === s.ID);
-                  const telp = ortu?.['NO. TELEPON AYAH'] || ortu?.['NO. TELEPON IBU'] || ortu?.['NO. TELEPON WALI'] || "-";
-                  const tglSekarang = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                  
-                  return `
-                    <div class="page-sheet">
-                      <div class="header-print">
-                        <h1>Biodata Siswa</h1>
-                        <p>MIN 7 Ponorogo • Profil Data Induk Rombel ${viewDetailRombel.nama}</p>
-                      </div>
-
-                      <div class="section-label">Data Siswa</div>
-
-                      <div class="grid">
-                        <div class="detail-item col-span-2">
-                          <span class="label">Nama Lengkap Siswa</span>
-                          <span class="value">${s.NAMA}</span>
-                        </div>
-                        <div class="detail-item col-span-2">
-                          <span class="label">NIK</span>
-                          <span class="value">
-                            ${isAdmin ? (s.NIK || '-') : '****************'}
-                          </span>
-                        </div>
-                        <div class="detail-item">
-                          <span class="label">NISN</span>
-                          <span class="value">${s.NISN}</span>
-                        </div>
-                        <div class="detail-item">
-                          <span class="label">NIS Lokal</span>
-                          <span class="value">${s['NIS LOKAL']}</span>
-                        </div>
-                        <div class="detail-item">
-                          <span class="label">Tempat Lahir</span>
-                          <span class="value">${s['TEMPAT LAHIR']}</span>
-                        </div>
-                        <div class="detail-item">
-                          <span class="label">Tanggal Lahir</span>
-                          <span class="value">${s['TANGGAL LAHIR']}</span>
-                        </div>
-                        <div class="detail-item">
-                          <span class="label">Jenis Kelamin</span>
-                          <span class="value">${s['JENIS KELAMIN'] === 'L' ? 'LAKI-LAKI' : 'PEREMPUAN'}</span>
-                        </div>
-                        <div class="detail-item">
-                          <span class="label">Agama</span>
-                          <span class="value">${s.AGAMA}</span>
-                        </div>
-                        <div class="detail-item">
-                          <span class="label">Anak Ke</span>
-                          <span class="value">${s['ANAK KE']}</span>
-                        </div>
-                        <div class="detail-item">
-                          <span class="label">Jumlah Saudara</span>
-                          <span class="value">${s['JUMLAH SAUDARA']}</span>
-                        </div>
-                        <div class="detail-item col-span-2">
-                          <span class="label">Asal Sekolah (TK/RA)</span>
-                          <span class="value">${s['ASAL SEKOLAH']}</span>
-                        </div>
-                        <div class="detail-item col-span-2">
-                          <span class="label">Alamat Tempat Tinggal</span>
-                          <span class="value">${alamat}</span>
-                        </div>
-                      </div>
-
-                      <div style="margin-top: 25px;"></div>
-                      <div class="section-label">Data Orang Tua / Wali</div>
-
-                      <div class="grid">
-                        <div class="detail-item">
-                          <span class="label">Nama Ayah</span>
-                          <span class="value">${ortu?.['NAMA AYAH'] || '-'}</span>
-                        </div>
-                        <div class="detail-item">
-                          <span class="label">Pekerjaan Ayah</span>
-                          <span class="value">${ortu?.['PEKERJAAN UTAMA AYAH'] || '-'}</span>
-                        </div>
-                        <div class="detail-item">
-                          <span class="label">Nama Ibu</span>
-                          <span class="value">${ortu?.['NAMA IBU'] || '-'}</span>
-                        </div>
-                        <div class="detail-item">
-                          <span class="label">Pekerjaan Ibu</span>
-                          <span class="value">${ortu?.['PEKERJAAN UTAMA IBU'] || '-'}</span>
-                        </div>
-                        <div class="detail-item col-span-2">
-                          <span class="label">Nomor Telepon Orang Tua</span>
-                          <span class="value">${telp}</span>
-                        </div>
-                      </div>
-
-                      <div class="footer-area">
-                        <div class="footer-grid">
-                          <div class="photo-frame">PAS FOTO<br>3 X 4</div>
-                          <div class="sign-box">
-                            <span class="date-line">Ponorogo, ${tglSekarang}</span>
-                            <span>Wali Murid,</span>
-                            <div class="line"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  `;
-                }).join('')}
-              </body>
-            </html>
-          `);
-          printWindow.document.close();
-          printWindow.print();
-        }}
-        className="bg-[#065f46] text-white px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-lg hover:bg-[#044d38] transition-all flex items-center gap-3 mb-2"
-      >
-        <span>🖨️ Cetak</span>
-      </button>
-    </div>
-
-    <div className="flex flex-wrap gap-3 mb-10">
-      <button onClick={() => setFilterRombel(null)} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${!filterRombel ? 'bg-emerald-50 border-emerald-500 text-emerald-600 ring-4 ring-emerald-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-emerald-200'}`}>
-        TOTAL: {viewDetailRombel.total} SISWA
-      </button>
-      <button onClick={() => setFilterRombel('L')} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'L' ? 'bg-indigo-50 border-indigo-500 text-indigo-600 ring-4 ring-indigo-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-200'}`}>
-      👦 L: {stats.l}
-      </button>
-      <button onClick={() => setFilterRombel('P')} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'P' ? 'bg-pink-50 border-pink-500 text-pink-600 ring-4 ring-pink-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-pink-200'}`}>
-      👧 P: {stats.p}
-      </button>
-    </div>
-    
-    {/* Tabel detail rombel di bawahnya tetap sama */}
-
-    {/* Filter Buttons ... tetap sama */}
-    <div className="flex flex-wrap gap-3 mb-10">
-      {/* ... kode filter L/P Anda ... */}
-    </div>
-
-                <div className="bg-emerald-50/30 p-8 rounded-[2.5rem] border border-emerald-100">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="text-[#065f46] text-[10px] font-black uppercase tracking-widest opacity-60">
-                        <th className="pb-6 px-4">NO</th>
-                        <th className="pb-6">NAMA</th>
-                        <th className="pb-6">TEMPAT LAHIR</th>
-                        <th className="pb-6 text-center">UMUR</th>
-                        <th className="pb-6 text-right">STATUS</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allAktivitas
-                        .filter(a => a.ROMBEL === viewDetailRombel.nama)
-                        .filter(item => {
-                          const s = allSiswa.find(x => x.ID === item.ID);
-                          const matchGender = filterRombel ? s?.['JENIS KELAMIN'] === filterRombel : true;
-                          const matchSearch = s?.NAMA?.toLowerCase().includes(searchTerm.toLowerCase());
-                          return matchGender && matchSearch;
-                        })
-                        .map((item, idx) => {
-                          const s = allSiswa.find(x => x.ID === item.ID);
-                          return (
-                            <tr key={idx} 
-  onClick={() => setViewDetailSiswa(s)} 
-  className="border-b border-white/50 group hover:bg-white/40 transition-all cursor-pointer"
->
-  <td className="py-4 px-4 text-xs font-black text-emerald-600/40">
-    {idx + 1}
-  </td>
-  <td className="py-4 text-xs font-black text-slate-700 uppercase group-hover:text-emerald-700 group-hover:translate-x-2 transition-transform duration-300">
-    {s?.NAMA}
-  </td>
-  <td className="py-4 text-[10px] font-bold text-slate-500 uppercase">
-    {s?.['TEMPAT LAHIR'] || '-'}
-  </td>
-  <td className="py-4 text-[10px] font-black text-emerald-600 italic text-center">
-    {hitungUmur(s?.['TANGGAL LAHIR'])}
-  </td>
-  <td className="py-4 text-right">
-    <span className={`text-[9px] font-black px-4 py-1.5 rounded-full shadow-sm border ${item['STATUS BELAJAR'] === 'Aktif' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400'}`}>
-      {item['STATUS BELAJAR']}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                    </tbody>
-                  </table>
-                </div>
-            </div>
-          )}
-        </main>
+      {/* Tabel Siswa */}
+      <div className="bg-emerald-50/30 p-8 rounded-[2.5rem] border border-emerald-100">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="text-[#065f46] text-[10px] font-black uppercase tracking-widest opacity-60">
+              <th className="pb-6 px-4">NO</th>
+              <th className="pb-6">NAMA</th>
+              <th className="pb-6">TEMPAT LAHIR</th>
+              <th className="pb-6 text-center">UMUR</th>
+              <th className="pb-6 text-right">STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {siswaDiRombelIni
+              .filter(item => {
+                const s = allSiswa.find(x => x.ID === item.ID);
+                const matchGender = filterRombel ? s?.['JENIS KELAMIN'] === filterRombel : true;
+                const matchSearch = s?.NAMA?.toLowerCase().includes(searchTerm.toLowerCase());
+                return matchGender && matchSearch;
+              })
+              .map((item, idx) => {
+                const s = allSiswa.find(x => x.ID === item.ID);
+                return (
+                  <tr key={idx} onClick={() => setViewDetailSiswa(s)} className="border-b border-white/50 group hover:bg-white/40 transition-all cursor-pointer">
+                    <td className="py-4 px-4 text-xs font-black text-emerald-600/40">{idx + 1}</td>
+                    <td className="py-4 text-xs font-black text-slate-700 uppercase group-hover:text-emerald-700 group-hover:translate-x-2 transition-transform duration-300">
+                      {s?.NAMA}
+                    </td>
+                    <td className="py-4 text-[10px] font-bold text-slate-500 uppercase">{s?.['TEMPAT LAHIR'] || '-'}</td>
+                    <td className="py-4 text-[10px] font-black text-emerald-600 italic text-center">{hitungUmur(s?.['TANGGAL LAHIR'])}</td>
+                    <td className="py-4 text-right">
+                      <span className={`text-[9px] font-black px-4 py-1.5 rounded-full shadow-sm border ${item['STATUS BELAJAR'] === 'Aktif' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400'}`}>
+                        {item['STATUS BELAJAR']}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
-}
+})()}
 
 function StatCard({ title, val, icon, col, onClick }: any) {
   return (
