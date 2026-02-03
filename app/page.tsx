@@ -440,7 +440,6 @@ export default function Dashboard() {
           </div>
 
           {menuAktif === 'rombel' && viewDetailRombel && (() => {
-  // 1. Logika perhitungan Data
   const siswaDiRombelIni = allAktivitas.filter(a => a.ROMBEL === viewDetailRombel.nama);
   const statsRombel = {
     total: siswaDiRombelIni.length,
@@ -450,35 +449,24 @@ export default function Dashboard() {
 
   return (
     <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
-      {/* Tombol Kembali */}
       <button onClick={() => { setViewDetailRombel(null); setFilterRombel(null); }} className="mb-6 text-[#065f46] font-black text-xs uppercase hover:underline flex items-center gap-2">
         <span>←</span> KEMBALI KE DAFTAR
       </button>
 
-      {/* Header Nama Rombel */}
       <div className="flex justify-between items-end mb-10">
         <div>
           <h3 className="text-7xl font-black italic uppercase text-slate-800 tracking-tighter">{viewDetailRombel.nama}</h3>
           <p className="text-2xl font-black italic text-[#065f46] opacity-80">KELAS {viewDetailRombel.kelas}</p>
         </div>
         
-        {/* Tombol Cetak */}
         <button 
           onClick={() => {
             const printWindow = window.open('', '_blank');
-            const listSiswa = allSiswa.filter(s => {
-              const aktiv = allAktivitas.find(a => a.ID === s.ID);
-              return aktiv?.ROMBEL === viewDetailRombel.nama;
-            });
-
-            printWindow.document.write(`
-              <html>
-                <head><title>CETAK BIODATA - ${viewDetailRombel.nama}</title></head>
-                <body></body>
-              </html>
-            `);
-            printWindow.document.close();
-            printWindow.print();
+            if (printWindow) {
+              printWindow.document.write(`<html><head><title>CETAK - ${viewDetailRombel.nama}</title></head><body></body></html>`);
+              printWindow.document.close();
+              printWindow.print();
+            }
           }}
           className="bg-[#065f46] text-white px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-lg hover:bg-[#044d38] transition-all flex items-center gap-3"
         >
@@ -486,31 +474,18 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* --- TOMBOL FILTER GAYA BARU --- */}
       <div className="flex flex-wrap gap-3 mb-10">
-        <button 
-          onClick={() => setFilterRombel(null)} 
-          className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${!filterRombel ? 'bg-emerald-50 border-emerald-500 text-emerald-600 ring-4 ring-emerald-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-emerald-200'}`}
-        >
+        <button onClick={() => setFilterRombel(null)} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${!filterRombel ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-white border-slate-100 text-slate-400'}`}>
           TOTAL: {statsRombel.total} SISWA
         </button>
-        
-        <button 
-          onClick={() => setFilterRombel('L')} 
-          className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'L' ? 'bg-indigo-50 border-indigo-500 text-indigo-600 ring-4 ring-indigo-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-200'}`}
-        >
+        <button onClick={() => setFilterRombel('L')} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'L' ? 'bg-indigo-50 border-indigo-500 text-indigo-600' : 'bg-white border-slate-100 text-slate-400'}`}>
           👦 LAKI-LAKI: {statsRombel.l}
         </button>
-        
-        <button 
-          onClick={() => setFilterRombel('P')} 
-          className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'P' ? 'bg-pink-50 border-pink-500 text-pink-600 ring-4 ring-pink-500/10' : 'bg-white border-slate-100 text-slate-400 hover:border-pink-200'}`}
-        >
+        <button onClick={() => setFilterRombel('P')} className={`px-6 py-3 rounded-full border-2 transition-all font-black text-[11px] uppercase ${filterRombel === 'P' ? 'bg-pink-50 border-pink-500 text-pink-600' : 'bg-white border-slate-100 text-slate-400'}`}>
           👧 PEREMPUAN: {statsRombel.p}
         </button>
       </div>
 
-      {/* Tabel Siswa */}
       <div className="bg-emerald-50/30 p-8 rounded-[2.5rem] border border-emerald-100">
         <table className="w-full text-left">
           <thead>
@@ -535,13 +510,13 @@ export default function Dashboard() {
                 return (
                   <tr key={idx} onClick={() => setViewDetailSiswa(s)} className="border-b border-white/50 group hover:bg-white/40 transition-all cursor-pointer">
                     <td className="py-4 px-4 text-xs font-black text-emerald-600/40">{idx + 1}</td>
-                    <td className="py-4 text-xs font-black text-slate-700 uppercase group-hover:text-emerald-700 group-hover:translate-x-2 transition-transform duration-300">
+                    <td className="py-4 text-xs font-black text-slate-700 uppercase group-hover:text-emerald-700 group-hover:translate-x-2 transition-all">
                       {s?.NAMA}
                     </td>
                     <td className="py-4 text-[10px] font-bold text-slate-500 uppercase">{s?.['TEMPAT LAHIR'] || '-'}</td>
                     <td className="py-4 text-[10px] font-black text-emerald-600 italic text-center">{hitungUmur(s?.['TANGGAL LAHIR'])}</td>
                     <td className="py-4 text-right">
-                      <span className={`text-[9px] font-black px-4 py-1.5 rounded-full shadow-sm border ${item['STATUS BELAJAR'] === 'Aktif' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400'}`}>
+                      <span className={`text-[9px] font-black px-4 py-1.5 rounded-full border ${item['STATUS BELAJAR'] === 'Aktif' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400'}`}>
                         {item['STATUS BELAJAR']}
                       </span>
                     </td>
@@ -553,7 +528,26 @@ export default function Dashboard() {
       </div>
     </div>
   );
-})()}
+})()} 
+{/* TANDA DI ATAS ADALAH PENUTUP IIFE. PASTIKAN DI BAWAHNYA ADA PENUTUP KOMPONEN UTAMA */}
+
+{/* CONTOH PENUTUP KOMPONEN UTAMA (Sesuaikan jumlah kurung penutupnya): */}
+      </div>
+    </main>
+  );
+}
+
+// BARU MASUKKAN FUNGSI STATCARD DI SINI
+function StatCard({ title, val, icon, col, onClick }: any) {
+  return (
+    <div onClick={onClick} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group cursor-pointer hover:shadow-lg transition-all active:scale-95">
+       <div className="relative z-10">
+         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{title}</p>
+         {/* ... sisa kode StatCard kamu ... */}
+       </div>
+    </div>
+  );
+}
 
 function StatCard({ title, val, icon, col, onClick }: any) {
   return (
